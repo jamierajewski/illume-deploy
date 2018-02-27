@@ -1,0 +1,10 @@
+/ansible/inventory
+/ansible/roles/common/files/ssh.cfg
+/terraform.tfstate.backup
+/ansible/ssh.cfg
+/ansible/roles/rke/files/cluster.yml
+/terraform.tfstate
+/illume.tfplan
+/ansible/roles/common/files/hosts
+/ansible/playbook.retry
+/.terraform

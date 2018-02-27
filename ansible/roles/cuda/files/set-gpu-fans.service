@@ -1,0 +1,12 @@
+[Unit]
+Description=start set-gpu-fans to keep nVidia GPU fans at 100%
+Requires=nvidia-persistenced.service
+After=nvidia-persistenced.service
+
+[Service]
+Type=simple
+ExecStart=/opt/set-gpu-fans/cool_gpu
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target

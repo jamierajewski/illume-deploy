@@ -1,0 +1,11 @@
+[bastion]
+$bastion
+
+[control]
+$control
+
+[worker]
+$worker
+
+[ingress]
+$ingress

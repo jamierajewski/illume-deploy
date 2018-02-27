@@ -1,0 +1,11 @@
+---
+- hosts: all
+  roles:
+    - common
+    - zerotier
+    - cuda
+    - nvidia-docker
+
+- hosts: bastion
+  roles:
+    - rke

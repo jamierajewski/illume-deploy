@@ -1,0 +1,19 @@
+- name: download rke
+  get_url:
+    url: https://github.com/rancher/rke/releases/download/v0.1.1/rke
+    checksum: sha256:00d91bd75e8b68c986fa229eee9606f8f1e69a134a64f02b162d20deb44f3381
+    dest: /usr/local/bin/rke
+    mode: 0555
+  become: true
+
+- name: install cluster.yml
+  copy:
+    src: ../files/cluster.yml
+    dest: "/home/{{ ansible_user }}/cluster.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "u=rw,g=r,o=r"
+    force: yes
+    backup: yes
+
+- meta: flush_handlers

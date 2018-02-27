@@ -1,0 +1,7 @@
+#!/bin/bash
+
+while true
+do
+    /usr/bin/nvidia-settings -a '[gpu:0]/GPUFanControlState=1' -a '[fan:0]/GPUTargetFanSpeed=100' -a '[gpu:0]/GPUPowerMizerMode=1' $@
+    sleep 5
+done

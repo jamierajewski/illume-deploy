@@ -1,0 +1,128 @@
+# perform these steps after ansible is done:
+
+# need a more modern version of rke than v0.1.1 since
+# we have custom ssh ports on our nodes.
+git clone https://github.com/rancher/rke
+cd rke
+make
+sudo cp bin/rke /usr/local/bin/rke
+cd ~/
+
+# bring up the kubernetes cluster
+rke up
+
+# activate the configuration
+cd ~
+mkdir .kube
+ln -s ../kube_config_cluster.yml .kube/config
+
+# install
+kubectl create -f nvidia-device-plugin.yml
+
+
+# taint all GPU nodes
+kubectl taint nodes illume-worker-1080ti-01 nvidia.com/gpu=true:NoSchedule
+kubectl taint nodes illume-worker-1080ti-02 nvidia.com/gpu=true:NoSchedule
+kubectl taint nodes illume-worker-1080ti-03 nvidia.com/gpu=true:NoSchedule
+
+
+# network policies:
+
+# label the kube-system namespace so we can refer to it in our
+# NetworkPolicy definitions
+kubectl label namespace kube-system name=kube-system
+
+
+# create and label our namespace
+kubectl create -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: freeforall
+  labels:
+    name: freeforall
+EOF
+
+
+# allow intra-namespace communication (and prevent all other communication)
+kubectl create -f - <<EOF
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: networkpolicy-freeforall
+  namespace: freeforall
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  - Ingress
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: freeforall
+  egress:
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            name: freeforall
+EOF
+
+
+# allow DNS access from freeforall namespace
+kubectl create -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-access
+  namespace: freeforall
+spec:
+  podSelector:
+    matchLabels: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+EOF
+
+
+# allow public internet access from freeforall namespace
+kubectl create -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-public-internet
+  namespace: freeforall
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - ipBlock:
+          cidr: 0.0.0.0/0
+          except:
+            - 10.0.0.0/8     # RFC1918 block 1
+            - 172.16.0.0/12  # RFC1918 block 2
+            - 192.168.0.0/16 # RFC1918 block 3
+            - 169.254.0.0/16 # link-local
+            - 224.0.0.0/24   # multicast
+EOF
+
+
+# expose service default/sshd-jumpserver-svc on TCP port 22 through ingress server
+kubectl replace -f - <<EOF
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: tcp-services
+  namespace: ingress-nginx
+data:
+  22: "default/sshd-jumpserver-svc:22"
+EOF

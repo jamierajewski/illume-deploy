@@ -1,0 +1,39 @@
+- name: add the zerotier-one repository apt key
+  apt_key:
+    url: https://download.zerotier.com/contact%40zerotier.com.gpg
+    state: present
+  become: true
+
+- name: add the zerotier-one repository
+  apt_repository:
+    repo: "deb https://download.zerotier.com/debian/xenial xenial main"
+    state: present
+  become: true
+
+- name: install zerotier-one
+  apt:
+    name: zerotier-one
+    update_cache: yes
+  become: true
+
+- name: enable and start the zerotier-one.service
+  systemd:
+    name: zerotier-one
+    daemon_reload: yes
+    state: started
+    enabled: yes
+  become: true
+
+- name: Wait until /var/lib/zerotier-one/identity.secret is present
+  wait_for:
+    path: /var/lib/zerotier-one/identity.secret
+  become: true
+
+- name: Check for successfully joined networks
+  shell: zerotier-cli listnetworks | grep 'OK' | awk '{print $3}'
+  register: joinednetworks
+  become: true
+
+- include_tasks: join_network.yml
+  when:
+  - 'zerotier_network_id not in joinednetworks.stdout'

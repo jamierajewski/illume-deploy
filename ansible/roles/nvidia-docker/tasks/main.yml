@@ -1,0 +1,55 @@
+- name: add the nvidia-docker2 repository apt key
+  apt_key:
+    url: https://nvidia.github.io/nvidia-docker/gpgkey
+    state: present
+  become: true
+
+- name: add the nvidia-docker2 repository
+  apt_repository: repo='{{item}}' state=present
+  with_items:
+    - "deb https://nvidia.github.io/libnvidia-container/ubuntu16.04/amd64 /"
+    - "deb https://nvidia.github.io/nvidia-container-runtime/ubuntu16.04/amd64 /"
+    - "deb https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64 /"
+  become: true
+
+- name: install nvidia-docker2
+  apt:
+    name: nvidia-docker2=2.0.2+docker17.03.2-1,nvidia-container-runtime=1.1.1+docker17.03.2-1
+    update_cache: yes
+    force: yes
+  become: true
+  notify:
+    - restart docker
+
+- name: hold nvidia-docker packages at installed versions
+  dpkg_selections: name='{{item}}' selection=hold
+  with_items:
+    - nvidia-docker2
+    - nvidia-container-runtime
+  become: true
+
+- name: Make sure nvidia-docker2 is the default runtime
+  lineinfile:
+    dest=/etc/docker/daemon.json
+    regexp='^    \"default-runtime\"'
+    line='    \"default-runtime\"{{ ":" }} \"nvidia\",'
+    insertbefore='^    \"runtimes\"'
+    state=present
+  become: true
+  notify:
+    - restart docker
+
+- name: check if we should reboot the system
+  stat:
+    path: /var/run/reboot-required
+    get_md5: no
+  register: rebootfile
+  become: true
+
+- name: trigger reboot if previous check succeeded
+  command: /bin/true
+  when: rebootfile.stat.exists == true
+  notify:
+    - reboot host and wait
+
+- meta: flush_handlers

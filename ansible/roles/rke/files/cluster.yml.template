@@ -1,0 +1,52 @@
+---
+nodes:
+$node_configuration
+
+services:
+  etcd:
+    image: quay.io/coreos/etcd:latest
+    extra_args: {}
+  kube-api:
+    image: rancher/k8s:v1.9.3-rancher1-1
+    extra_args:
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true"
+    service_cluster_ip_range: 10.233.0.0/18
+    pod_security_policy: true
+  kube-controller:
+    image: rancher/k8s:v1.9.3-rancher1-1
+    extra_args:
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true"
+    cluster_cidr: 10.233.64.0/18
+    service_cluster_ip_range: 10.233.0.0/18
+  scheduler:
+    image: rancher/k8s:v1.9.3-rancher1-1
+    extra_args:
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true"
+  kubelet:
+    image: rancher/k8s:v1.9.3-rancher1-1
+    extra_args:
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true"
+    cluster_domain: cluster.local
+    infra_container_image: gcr.io/google_containers/pause-amd64:3.0
+    cluster_dns_server: 10.233.0.3
+    fail_swap_on: true
+  kubeproxy:
+    image: rancher/k8s:v1.9.3-rancher1-1
+    extra_args:
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true"
+
+network:
+  plugin: canal
+  options: {}
+authentication:
+  strategy: x509
+  options: {}
+addons: ""
+system_images: {}
+ssh_key_path: $ssh_keyfile
+ignore_docker_version: false
+kubernetes_version: ""
+private_registries: []
+authorization:
+  mode: rbac
+  options: {}

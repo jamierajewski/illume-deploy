@@ -1,0 +1,16 @@
+---
+- block: # Join Zerotier network
+  - name: Get Zerotier NodeID
+    shell: zerotier-cli info | awk '{print $3}'
+    register: nodeid
+    become: true
+
+  - name: Set NodeID as fact
+    set_fact:
+      zerotier_node_id: "{{ nodeid.stdout }}"
+
+  - name: Join Zerotier network
+    command: zerotier-cli join {{ zerotier_network_id }}
+    args:
+      creates: /var/lib/zerotier-one/networks.d/{{ zerotier_network_id }}.conf
+    become: true
