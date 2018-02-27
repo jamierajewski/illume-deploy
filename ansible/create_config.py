@@ -111,7 +111,7 @@ def create_ssh_config(data, outfile, special_config_name=None):
 
 def main():
     # get data from  terraform output for injection in template
-    tf_output= subprocess.Popen("terraform output -state=../terraform.tfstate -json", shell=True, stdout=subprocess.PIPE).stdout.read()
+    tf_output= subprocess.Popen("terraform output -state=../terraform/terraform.tfstate -json", shell=True, stdout=subprocess.PIPE).stdout.read()
     data = json.loads(tf_output)
 
     subnet = data['subnet']['value']
@@ -141,8 +141,8 @@ def main():
     d = {
         'bastion'      :data['bastion-address']['value']+" ansible_connection=ssh ansible_user="+ssh_username,
         'control'      :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in data['illume-control-addresses']['value']),
-        'worker-gpu'   :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in all_worker_addresses_gpu),
-        'worker-nogpu' :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in all_worker_addresses_nogpu),
+        'worker_gpu'   :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in all_worker_addresses_gpu),
+        'worker_nogpu' :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in all_worker_addresses_nogpu),
         'ingress'      :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in data['illume-ingress-addresses']['value']),
         }
     result = src.substitute(d)

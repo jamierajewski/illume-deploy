@@ -4,8 +4,11 @@ $bastion
 [control]
 $control
 
-[worker]
-$worker
+[worker-nogpu]
+$worker_nogpu
+
+[worker-gpu]
+$worker_gpu
 
 [ingress]
 $ingress
