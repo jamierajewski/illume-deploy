@@ -2,9 +2,9 @@
 
 TF_PLAN=illume.tfplan
 
-terraform validate || exit 1
-terraform init || exit 2
-terraform plan -out $TF_PLAN|| exit 3
+terraform init || exit 1
+terraform validate -var-file=openstack_user.tfvars || exit 2
+terraform plan -out $TF_PLAN -var-file=openstack_user.tfvars || exit 3
 terraform apply $TF_PLAN || exit 4
 #./create_config.py || exit 5
 #rke up || exit 6
