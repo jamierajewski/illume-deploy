@@ -9,3 +9,8 @@
 /ansible/playbook.retry
 /.terraform
 /openstack_user.tfvars
+/terraform/.terraform.tfstate.lock.info
+/terraform/terraform.tfstate
+/terraform/terraform.tfstate.backup
+/terraform/illume.tfplan
+/terraform/.terraform

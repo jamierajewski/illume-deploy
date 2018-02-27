@@ -2,7 +2,13 @@
 - hosts: all
   roles:
     - common
+
+- hosts: worker-gpu:worker-nogpu:ingress
+  roles:
     - zerotier
+
+- hosts: worker-gpu
+  roles:
     - cuda
     - nvidia-docker
 

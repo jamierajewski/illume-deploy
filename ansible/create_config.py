@@ -126,18 +126,24 @@ def main():
     # Write ssh.cfg (for role)
     create_ssh_config(data, outfile="roles/common/files/ssh.cfg")
 
-    all_worker_addresses = []
+    all_worker_addresses_gpu = []
+    all_worker_addresses_nogpu = []
     for worker_kind in worker_kinds:
-        all_worker_addresses += data['illume-worker-{}-addresses'.format(worker_kind)]['value']
+        new_addr = data['illume-worker-{}-addresses'.format(worker_kind)]['value']
+        if worker_kind=="nogpu":
+            all_worker_addresses_nogpu += new_addr
+        else:
+            all_worker_addresses_gpu += new_addr
 
     # Substitute vars in template
     filein = open("inventory.template")
     src = Template(filein.read())
     d = {
-        'bastion':data['bastion-address']['value']+" ansible_connection=ssh ansible_user="+ssh_username,
-        'control':'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in data['illume-control-addresses']['value']),
-        'worker' :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in all_worker_addresses),
-        'ingress':'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in data['illume-ingress-addresses']['value']),
+        'bastion'      :data['bastion-address']['value']+" ansible_connection=ssh ansible_user="+ssh_username,
+        'control'      :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in data['illume-control-addresses']['value']),
+        'worker-gpu'   :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in all_worker_addresses_gpu),
+        'worker-nogpu' :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in all_worker_addresses_nogpu),
+        'ingress'      :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in data['illume-ingress-addresses']['value']),
         }
     result = src.substitute(d)
     del filein
