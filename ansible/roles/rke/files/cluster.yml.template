@@ -50,3 +50,8 @@ private_registries: []
 authorization:
   mode: rbac
   options: {}
+
+ingress:
+  provider: nginx
+  node_selector:
+    app: ingress
