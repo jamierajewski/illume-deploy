@@ -40,4 +40,12 @@
     force: yes
     backup: yes
 
+- name: install nvidia-device-plugin.yml
+  copy:
+    src: ../files/nvidia-device-plugin.yml
+    dest: "/home/{{ ansible_user }}/nvidia-device-plugin.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "u=rw,g=r,o=r"
+
 - meta: flush_handlers
