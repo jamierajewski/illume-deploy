@@ -11,7 +11,7 @@ services:
     extra_args:
      feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true"
     service_cluster_ip_range: 10.233.0.0/18
-    pod_security_policy: true
+    pod_security_policy: false
   kube-controller:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
