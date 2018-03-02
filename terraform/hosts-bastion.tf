@@ -25,9 +25,11 @@ resource "openstack_compute_instance_v2" "illume-bastion" {
      }
 
     # mount ephemeral storage #0 to /var/lib/docker
-    user_data       = "#cloud-config\nmounts:\n  - [ ephemeral0, /var/lib/docker ]"
-
-    #image_name      = "${openstack_images_image_v2.illume-ubuntu.name}"
+    user_data       = <<EOF
+#cloud-config
+mounts:
+  - [ ephemeral0, /var/lib/docker ]
+EOF
 
     flavor_name     = "${var.flavor-bastion}"
     key_pair        = "${openstack_compute_keypair_v2.illume.name}"

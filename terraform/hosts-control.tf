@@ -22,8 +22,13 @@ resource "openstack_compute_instance_v2" "illume-control" {
        volume_size           = 90
      }
 
-    # mount ephemeral storage #0 to /scratch
-    user_data       = "#cloud-config\nmounts:\n  - [ ephemeral0, /scratch ]"
+    # mount ephemeral storage #0 to /scratch [do not use it here, use 100%
+    # volume storage]
+    user_data       = <<EOF
+#cloud-config
+mounts:
+  - [ ephemeral0, /scratch ]
+EOF
 
     flavor_name     = "${var.flavor-control}"
     key_pair        = "${openstack_compute_keypair_v2.illume.name}"

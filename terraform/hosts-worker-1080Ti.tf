@@ -20,38 +20,52 @@ resource "openstack_compute_instance_v2" "illume-worker-1080ti" {
        uuid                  = "${openstack_images_image_v2.illume-ubuntu.id}"
     }
 
+    # assign all ephemeral storage for this flavor (2048GB),
+    # then split it up into partitions.
+    # (OpenStack on cirrus did not seem to allow me to create more
+    # than 2 ephemeral disks, so use partitions on a single disk instead.)
+    block_device {
+       boot_index            = -1
+       delete_on_termination = true
+       destination_type      = "local"
+       source_type           = "blank"
+       volume_size           = 2048
+     }
 
-        # first ephemeral drive (240GB)
-        block_device {
-           boot_index            = -1
-           delete_on_termination = true
-           destination_type      = "local"
-           source_type           = "blank"
-           volume_size           = 240
-        }
+    # split ephemeral storage into 3 parts:
+    #  205GB - ephemeral0.1 (10%)
+    #  205GB - ephemeral0.2 (10%)
+    # 1638GB - ephemeral0.3 (80%)
+    # mount ephemeral storage #0.1 to /var/lib/docker
+    # mount ephemeral storage #0.2 to /var/lib/kubelet
+    # mount ephemeral storage #0.3 to /cephstore
+    user_data       = <<EOF
+#cloud-config
+disk_setup:
+  ephemeral0:
+    table_type: 'gpt'
+    layout:
+      - 10
+      - 10
+      - 80
+    overwrite: true
 
-        # second ephemeral drive (240GB)
-        block_device {
-           boot_index            = -1
-           delete_on_termination = true
-           destination_type      = "local"
-           source_type           = "blank"
-           volume_size           = 240
-        }
+fs_setup:
+  - label: ephemeral0.1
+    filesystem: 'ext4'
+    device: 'ephemeral0.1'
+  - label: ephemeral0.2
+    filesystem: 'ext4'
+    device: 'ephemeral0.2'
+  - label: ephemeral0.3
+    filesystem: 'ext4'
+    device: 'ephemeral0.3'
 
-        # third ephemeral drive (1568GB)
-        block_device {
-           boot_index            = -1
-           delete_on_termination = true
-           destination_type      = "local"
-           source_type           = "blank"
-           volume_size           = 1568
-        }
-
-        # mount ephemeral storage #0 to /var/lib/docker
-        # mount ephemeral storage #1 to /var/lib/kubelet
-        # mount ephemeral storage #2 to /cephstore
-        user_data       = "#cloud-config\nmounts:\n  - [ ephemeral0, /var/lib/docker ]\n  - [ ephemeral1, /var/lib/kubelet ]\n  - [ ephemeral2, /cephstore ]"
+mounts:
+  - [ ephemeral0.1, /var/lib/docker ]
+  - [ ephemeral0.2, /var/lib/kubelet ]
+  - [ ephemeral0.3, /cephstore ]
+EOF
 
     network {
       name = "${var.network}"
