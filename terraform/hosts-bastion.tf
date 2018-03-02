@@ -5,6 +5,7 @@ resource "openstack_compute_floatingip_v2" "illume-bastion" {
 resource "openstack_compute_instance_v2" "illume-bastion" {
     name = "illume-bastion"
 
+    # boot from volume (created from image)
     block_device {
         uuid                  = "${openstack_images_image_v2.illume-ubuntu.id}"
         source_type           = "image"
@@ -13,6 +14,18 @@ resource "openstack_compute_instance_v2" "illume-bastion" {
         destination_type      = "volume"
         delete_on_termination = true
     }
+
+    # first ephemeral drive (45GB)
+    block_device {
+       boot_index            = -1
+       delete_on_termination = true
+       destination_type      = "local"
+       source_type           = "blank"
+       volume_size           = 45
+     }
+
+    # mount ephemeral storage #0 to /var/lib/docker
+    user_data       = "#cloud-config\nmounts:\n  - [ ephemeral0, /var/lib/docker ]"
 
     #image_name      = "${openstack_images_image_v2.illume-ubuntu.name}"
 

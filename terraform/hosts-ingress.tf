@@ -4,13 +4,44 @@ resource "openstack_compute_instance_v2" "illume-ingress" {
     count = 1
     name = "${format("illume-ingress-%02d", count.index+1)}"
 
-    image_name      = "${openstack_images_image_v2.illume-ubuntu.name}"
+    image_id      = "${openstack_images_image_v2.illume-ubuntu.id}"
     flavor_name     = "${var.flavor-ingress}"
     key_pair        = "${openstack_compute_keypair_v2.illume.name}"
     security_groups = [
       "${openstack_compute_secgroup_v2.illume-ingress.name}",
       "${openstack_compute_secgroup_v2.illume-internal.name}"
     ]
+
+    # boot device (ephemeral)
+    block_device {
+       boot_index            = 0
+       delete_on_termination = true
+       destination_type      = "local"
+       source_type           = "image"
+       uuid                  = "${openstack_images_image_v2.illume-ubuntu.id}"
+    }
+
+    # first ephemeral drive (45GB)
+    block_device {
+       boot_index            = -1
+       delete_on_termination = true
+       destination_type      = "local"
+       source_type           = "blank"
+       volume_size           = 45
+    }
+
+    # second ephemeral drive (45GB)
+    block_device {
+       boot_index            = -1
+       delete_on_termination = true
+       destination_type      = "local"
+       source_type           = "blank"
+       volume_size           = 45
+    }
+
+    # mount ephemeral storage #0 to /var/lib/docker
+    # mount ephemeral storage #1 to /var/lib/kubelet
+    user_data       = "#cloud-config\nmounts:\n  - [ ephemeral0, /var/lib/docker ]\n  - [ ephemeral1, /var/lib/kubelet ]"
 
     network {
       name = "${var.network}"
