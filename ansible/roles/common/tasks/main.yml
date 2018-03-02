@@ -127,6 +127,8 @@
     groups: docker
     append: yes
   become: true
+  notify:
+    - reboot host and wait
 
 - name: download and install kubectl
   get_url:
