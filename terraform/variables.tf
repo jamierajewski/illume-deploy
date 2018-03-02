@@ -13,7 +13,7 @@ variable "image-name" {
 }
 
 variable "volume-size-control" {
-  default = "30"
+  default = "120"
 }
 
 variable "volume-size-bastion" {
