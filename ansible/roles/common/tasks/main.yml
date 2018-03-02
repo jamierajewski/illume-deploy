@@ -83,6 +83,8 @@
     install_recommends: yes
     update_cache: yes
   become: true
+  async: 1000
+  poll: 10
 
 - name: check if we should reboot the system
   stat:
@@ -110,11 +112,15 @@
     upgrade: dist
     update_cache: yes
   become: true
+  async: 1000
+  poll: 10
 
 - name: install nfs-common and ceph-common
   apt:
     name: nfs-common,ceph-common
   become: true
+  async: 1000
+  poll: 10
 
 - name: Make rpc-statd.service start with multi-user.target
   shell: systemctl add-wants multi-user.target rpc-statd.service
@@ -133,6 +139,8 @@
   apt:
     name: apt-transport-https,ca-certificates,curl,software-properties-common
   become: true
+  async: 1000
+  poll: 10
 
 - name: add the docker repository apt key
   apt_key:
@@ -152,6 +160,8 @@
     update_cache: yes
     force: yes
   become: true
+  async: 1000
+  poll: 10
 
 - name: hold docker-ce package at installed version
   dpkg_selections:

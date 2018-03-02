@@ -15,6 +15,8 @@
     name: cuda
     update_cache: yes
   become: true
+  async: 1000
+  poll: 10
 
 - name: install the CUDA profile.d file
   copy:
