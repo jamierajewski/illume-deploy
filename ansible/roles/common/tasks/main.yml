@@ -77,6 +77,26 @@
     - rebuild initrd
     - reboot host and wait
 
+- name: upgrade kernel
+  apt:
+    name: linux-generic-hwe-16.04
+    install_recommends: yes
+    update_cache: yes
+  become: true
+
+- name: check if we should reboot the system
+  stat:
+    path: /var/run/reboot-required
+    get_md5: no
+  register: rebootfile
+  become: true
+
+- name: trigger reboot if previous check succeeded
+  command: /bin/true
+  when: rebootfile.stat.exists == true
+  notify:
+    - reboot host and wait
+
 - meta: flush_handlers
 
 - name: make sure the nouveau kernel module is *not* loaded
@@ -89,6 +109,24 @@
   apt:
     upgrade: dist
     update_cache: yes
+  become: true
+
+- name: install nfs-common and ceph-common
+  apt:
+    name: nfs-common,ceph-common
+  become: true
+
+- name: Make rpc-statd.service start with multi-user.target
+  shell: systemctl add-wants multi-user.target rpc-statd.service
+  register: rpcstatd_install
+  changed_when: "'Created symlink' in rpcstatd_install.stdout + rpcstatd_install.stderr"
+  become: true
+
+- name: enable and start rpc-statd.service
+  systemd:
+    name: rpc-statd.service
+    state: started
+    enabled: yes
   become: true
 
 - name: install basic docker dependencies
