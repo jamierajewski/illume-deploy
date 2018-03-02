@@ -14,3 +14,4 @@
 /terraform/terraform.tfstate.backup
 /terraform/illume.tfplan
 /terraform/.terraform
+/ansible/terraform.tfstate
