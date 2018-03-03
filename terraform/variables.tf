@@ -24,6 +24,10 @@ variable "flavor-bastion" {
   default = "c2-4GB-45"
 }
 
+variable "flavor-proxy" {
+  default = "c4-16GB-180"
+}
+
 variable "flavor-control" {
   default = "c4-8GB-90"
 }

@@ -34,18 +34,21 @@ resource "openstack_compute_instance_v2" "illume-ingress" {
      }
 
     # split ephemeral storage into 3 parts:
-    # 45GB - ephemeral0.1 (50%)
-    # 45GB - ephemeral0.2 (50%)
+    # 36GB - ephemeral0.1 (40%)
+    # 36GB - ephemeral0.2 (40%)
+    # 18GB - ephemeral0.2 (20%)
     # mount ephemeral storage #0.1 to /var/lib/docker
     # mount ephemeral storage #0.2 to /var/lib/kubelet
+    # mount ephemeral storage #0.3 to /var/lib/cvmfs
     user_data       = <<EOF
 #cloud-config
 disk_setup:
   ephemeral0:
     table_type: 'gpt'
     layout:
-      - 50
-      - 50
+      - 40
+      - 40
+      - 20
     overwrite: true
 
 fs_setup:
@@ -55,10 +58,14 @@ fs_setup:
   - label: ephemeral0.2
     filesystem: 'ext4'
     device: 'ephemeral0.2'
+  - label: ephemeral0.3
+    filesystem: 'ext4'
+    device: 'ephemeral0.3'
 
 mounts:
   - [ ephemeral0.1, /var/lib/docker ]
   - [ ephemeral0.2, /var/lib/kubelet ]
+  - [ ephemeral0.3, /var/lib/cvmfs ]
 EOF
 
     network {

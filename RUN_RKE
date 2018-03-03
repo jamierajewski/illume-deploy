@@ -16,41 +16,43 @@ cd ~
 mkdir .kube
 cp kube_config_cluster.yml .kube/config
 
-# install
+# install the nvidia device plugin
 kubectl create -f nvidia-device-plugin.yml
-
 
 # taint all GPU nodes
 kubectl taint nodes illume-worker-1080ti-01 nvidia.com/gpu=true:NoSchedule
 kubectl taint nodes illume-worker-1080ti-02 nvidia.com/gpu=true:NoSchedule
 kubectl taint nodes illume-worker-1080ti-03 nvidia.com/gpu=true:NoSchedule
 
+# taint control nodes so that pods don't end up on them
+kubectl taint nodes illume-control-01 node-role.kubernetes.io/master=true:NoSchedule
+kubectl taint nodes illume-control-02 node-role.kubernetes.io/master=true:NoSchedule
+kubectl taint nodes illume-control-03 node-role.kubernetes.io/master=true:NoSchedule
 
-# network policies:
+
+# define some network policies:
 
 # label the kube-system namespace so we can refer to it in our
 # NetworkPolicy definitions
 kubectl label namespace kube-system name=kube-system
-
 
 # create and label our namespace
 kubectl create -f - <<EOF
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: freeforall
+  name: illume
   labels:
-    name: freeforall
+    name: illume
 EOF
-
 
 # allow intra-namespace communication (and prevent all other communication)
 kubectl create -f - <<EOF
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
-  name: networkpolicy-freeforall
-  namespace: freeforall
+  name: allow-namespace-illume
+  namespace: illume
 spec:
   podSelector: {}
   policyTypes:
@@ -60,22 +62,21 @@ spec:
     - from:
       - namespaceSelector:
           matchLabels:
-            name: freeforall
+            name: illume
   egress:
     - to:
       - namespaceSelector:
           matchLabels:
-            name: freeforall
+            name: illume
 EOF
 
-
-# allow DNS access from freeforall namespace
+# allow DNS access from illume namespace
 kubectl create -f - <<EOF
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-dns-access
-  namespace: freeforall
+  namespace: illume
 spec:
   podSelector:
     matchLabels: {}
@@ -91,14 +92,13 @@ spec:
       port: 53
 EOF
 
-
-# allow public internet access from freeforall namespace
+# allow public internet access from the illume namespace
 kubectl create -f - <<EOF
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: allow-public-internet
-  namespace: freeforall
+  namespace: illume
 spec:
   podSelector: {}
   policyTypes:
@@ -116,40 +116,35 @@ spec:
 EOF
 
 
-# expose service default/sshd-jumpserver-svc on TCP port 22 through ingress server
-kubectl replace -f - <<EOF
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: tcp-services
-  namespace: ingress-nginx
-data:
-  22: "default/sshd-jumpserver-svc:22"
-EOF
 
 
 ---
 
 ### deploy rook
+
+Now set up some ceph storage on top of the bulk ephemeral storage we have.
+We set this up for block storage we will provide to nodes for scratch space.
+
 ```
 git clone https://github.com/rook/rook
 cd rook/cluster/examples/kubernetes
 ```
 
-Edit rook-operator.yml and make env FLEXVOLUME_DIR_PATH point to /var/lib/kubelet/volumeplugins.
-Also change AGENT_TOLERATION to "NoSchedule" (and optionally AGENT_TOLERATION_KEY to "nvidia.com/gpu").
+Edit rook-operator.yaml and make env FLEXVOLUME_DIR_PATH point to /var/lib/kubelet/volumeplugins.
+Also change AGENT_TOLERATION to "NoSchedule".
 
 ```
 kubectl create -f rook-operator.yaml
 ```
 
-wait until
+Now wait until
 ```
 kubectl -n rook-system get pod
 ```
 shows that everything is created.
 
-Now label the storage nodes
+
+Label the storage nodes
 ```
 kubectl label nodes illume-worker-1080ti-01 role=storage-node
 kubectl label nodes illume-worker-1080ti-02 role=storage-node
@@ -158,10 +153,10 @@ kubectl label nodes illume-worker-nogpu-01 role=storage-node
 kubectl label nodes illume-worker-nogpu-02 role=storage-node
 kubectl label nodes illume-worker-nogpu-03 role=storage-node
 ```
-
-And deploy. Note that this can tolerate GPU nodes and will only run
+and deploy. Note that this can tolerate GPU nodes and will only run
 on labeled nodes.
 ```
+kubectl create -f - <<EOF
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -173,7 +168,7 @@ metadata:
   name: rook
   namespace: rook
 spec:
-  dataDirHostPath: /mnt
+  dataDirHostPath: /cephstore
   storage:
     useAllNodes: true
     useAllDevices: false
@@ -207,33 +202,37 @@ spec:
     osd:
       nodeAffinity:
       tolerations:
+EOF
 ```
 
-Now create a rook filesystem:
+Monitor until we see all pods (mgr, osd, mon, api)
+```
+kubectl -n rook get pods
+```
+
+Create a rook storage pool and storage class for block storage:
 ```
 kubectl create -f - <<EOF
 apiVersion: rook.io/v1alpha1
-kind: Filesystem
+kind: Pool
 metadata:
-  name: myfs
+  name: replicapool
   namespace: rook
 spec:
-  metadataPool:
-    replicated:
-      size: 3
-  dataPools:
-    - erasureCoded:
-       dataChunks: 2
-       codingChunks: 1
-  metadataServer:
-    activeCount: 1
-    activeStandby: true
+  replicated:
+    size: 3
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+   name: rook-block
+provisioner: rook.io/block
+parameters:
+  pool: replicapool
 EOF
-
-kubectl -n rook get pod -l app=rook-ceph-mds
 ```
 
-And test it:
+See how things worked:
 ```
 kubectl create -f rook-tools.yaml
 kubectl -n rook get pod rook-tools
@@ -241,10 +240,59 @@ kubectl -n rook exec -it rook-tools bash
 rookctl status
 ceph df
 rados df
-
-mkdir /tmp/registry
-rookctl filesystem mount --name myfs --path /tmp/registry
-
-rookctl filesystem unmount --path /tmp/registry
-rmdir /tmp/registry
+kubectl delete -f rook-tools.yaml
 ```
+
+#Now create a rook filesystem:
+#```
+#kubectl create -f - <<EOF
+#apiVersion: rook.io/v1alpha1
+#kind: Filesystem
+#metadata:
+#  name: myfs
+#  namespace: rook
+#spec:
+#  metadataPool:
+#    replicated:
+#      size: 3
+#  dataPools:
+#    - erasureCoded:
+#       dataChunks: 2
+#       codingChunks: 1
+#  metadataServer:
+#    activeCount: 1
+#    activeStandby: true
+#EOF
+#
+#kubectl -n rook get pod -l app=rook-ceph-mds
+#```
+#
+#And test it:
+#```
+#kubectl create -f rook-tools.yaml
+#kubectl -n rook get pod rook-tools
+#kubectl -n rook exec -it rook-tools bash
+#rookctl status
+#ceph df
+#rados df
+#
+#mkdir /tmp/registry
+#rookctl filesystem mount --name myfs --path /tmp/registry
+#
+#rookctl filesystem unmount --path /tmp/registry
+#rmdir /tmp/registry
+#```
+
+
+-----------------
+
+# expose service default/sshd-jumpserver-svc on TCP port 22 through ingress server
+kubectl replace -f - <<EOF
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: tcp-services
+  namespace: ingress-nginx
+data:
+  22: "default/sshd-jumpserver-svc:22"
+EOF

@@ -50,4 +50,12 @@
     group: "{{ ansible_user }}"
     mode: "u=rw,g=r,o=r"
 
+- name: install example-ubuntu-host.yml
+  copy:
+    src: ../files/example-ubuntu-host.yml
+    dest: "/home/{{ ansible_user }}/example-ubuntu-host.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "u=rw,g=r,o=r"
+
 - meta: flush_handlers

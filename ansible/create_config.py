@@ -69,6 +69,18 @@ def create_ssh_config(data, outfile, special_config_name=None):
         }
     result += src.substitute(d) + "\n"
 
+    for idx, address in enumerate(data['illume-proxy-addresses']['value']):
+        d = {
+            'hostname':"illume-proxy-{:02d}".format(idx+1),
+            'host_ip':address,
+            'port':22,
+            'ssh_username':ssh_username,
+            'ssh_keyfile':ssh_keyfile,
+            'bastion_host_public':bastion_host_public,
+            'ssh_config_flag':ssh_config_flag
+            }
+        result += src.substitute(d) + "\n"
+
     for idx, address in enumerate(data['illume-control-addresses']['value']):
         d = {
             'hostname':"illume-control-{:02d}".format(idx+1),
@@ -140,6 +152,7 @@ def main():
     src = Template(filein.read())
     d = {
         'bastion'      :data['bastion-address']['value']+" ansible_connection=ssh ansible_user="+ssh_username,
+        'proxy'        :'\n'.join(x+" ansible_connection=ssh ansible_user="+ssh_username for x in data['illume-proxy-addresses']['value']),
         'control'      :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in data['illume-control-addresses']['value']),
         'worker_gpu'   :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in all_worker_addresses_gpu),
         'worker_nogpu' :'\n'.join(x+" ansible_connection=ssh ansible_port=2222 ansible_user="+ssh_username for x in all_worker_addresses_nogpu),
@@ -153,12 +166,28 @@ def main():
     text_file.write(result)
     text_file.close()
 
+    # Substitute vars in cvmfs configuration
+    cvmfs_proxies = ["http://"+x+":3128" for x in data['illume-proxy-addresses']['value']]
+    cvmfs_proxies = '|'.join(cvmfs_proxies)
+
+    filein = open("roles/cvmfs/defaults/main.yml.template")
+    src = Template(filein.read())
+    d = {'cvmfs_proxies' : cvmfs_proxies, }
+    result = src.substitute(d)
+    del filein
+    # Write inventory (for ansible)
+    text_file = open("roles/cvmfs/defaults/main.yml", "w")
+    text_file.write(result)
+    text_file.close()
+
     # Write /etc/hosts file
     filein = open("roles/common/files/hosts.template")
     text_file = open("roles/common/files/hosts", "w")
     text_file.write(filein.read())
 
     text_file.write(bastion_host + " illume-bastion\n")
+    for idx, address in enumerate(data['illume-proxy-addresses']['value']):
+        text_file.write(address + " illume-proxy-{:02d}\n".format(idx+1))
     for idx, address in enumerate(data['illume-control-addresses']['value']):
         text_file.write(address + " illume-control-{:02d}\n".format(idx+1))
     for worker_kind in worker_kinds:

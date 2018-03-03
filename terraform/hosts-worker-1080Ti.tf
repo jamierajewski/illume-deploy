@@ -35,10 +35,12 @@ resource "openstack_compute_instance_v2" "illume-worker-1080ti" {
     # split ephemeral storage into 3 parts:
     #  205GB - ephemeral0.1 (10%)
     #  205GB - ephemeral0.2 (10%)
-    # 1638GB - ephemeral0.3 (80%)
+    #   61GB - ephemeral0.3 ( 3%)
+    # 1577GB - ephemeral0.4 (77%)
     # mount ephemeral storage #0.1 to /var/lib/docker
     # mount ephemeral storage #0.2 to /var/lib/kubelet
-    # mount ephemeral storage #0.3 to /cephstore
+    # mount ephemeral storage #0.3 to /var/lib/cvmfs
+    # mount ephemeral storage #0.4 to /cephstore
     user_data       = <<EOF
 #cloud-config
 disk_setup:
@@ -47,7 +49,8 @@ disk_setup:
     layout:
       - 10
       - 10
-      - 80
+      - 3
+      - 77
     overwrite: true
 
 fs_setup:
@@ -60,11 +63,15 @@ fs_setup:
   - label: ephemeral0.3
     filesystem: 'ext4'
     device: 'ephemeral0.3'
+  - label: ephemeral0.4
+    filesystem: 'ext4'
+    device: 'ephemeral0.4'
 
 mounts:
   - [ ephemeral0.1, /var/lib/docker ]
   - [ ephemeral0.2, /var/lib/kubelet ]
-  - [ ephemeral0.3, /cephstore ]
+  - [ ephemeral0.3, /var/lib/cvmfs ]
+  - [ ephemeral0.4, /cephstore ]
 EOF
 
     network {

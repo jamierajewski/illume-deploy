@@ -6,6 +6,10 @@ output "bastion-address-public" {
   value = "${openstack_compute_floatingip_v2.illume-bastion.address}"
 }
 
+output "illume-proxy-addresses" {
+  value = "${openstack_compute_instance_v2.illume-proxy.*.network.0.fixed_ip_v4}"
+}
+
 output "illume-control-addresses" {
   value = "${openstack_compute_instance_v2.illume-control.*.network.0.fixed_ip_v4}"
 }

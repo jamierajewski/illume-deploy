@@ -1,6 +1,9 @@
 [bastion]
 $bastion
 
+[proxy]
+$proxy
+
 [control]
 $control
 

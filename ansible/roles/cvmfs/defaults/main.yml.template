@@ -1,0 +1,6 @@
+cvmfs_proxies: "$cvmfs_proxies"
+cvmfs_mounts:
+  - icecube.opensciencegrid.org
+  - oasis.opensciencegrid.org
+  - singularity.opensciencegrid.org
+  - config-osg.opensciencegrid.org

@@ -1,0 +1,9 @@
+---
+
+- name: restart squid
+  become: yes
+  service:
+    name: squid
+    state: restarted
+  tags:
+    - squid

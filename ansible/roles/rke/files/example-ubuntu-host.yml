@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-pv-claim
+  namespace: illume
+  labels:
+    app: test
+spec:
+  storageClassName: rook-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test
+  namespace: illume
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/test: unconfined
+    spec:
+      containers:
+      - image: ubuntu
+        name: test
+        command: [ "/bin/bash", "-c", "--" ]
+        args: [ "while true; do sleep 30; done;" ]
+        securityContext:
+          capabilities:
+            add:
+              - SYS_ADMIN
+        volumeMounts:
+        - name: test-persistent-storage
+          mountPath: /scratch
+        - name: homedir
+          mountPath: /home
+          subPath: illume/home
+      volumes:
+      - name: test-persistent-storage
+        persistentVolumeClaim:
+          claimName: test-pv-claim
+      - name: homedir
+        nfs:
+          server: 192.168.19.2
+          path: "/mnt/tank/export/scratch/icecube"
+
