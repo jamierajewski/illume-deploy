@@ -138,6 +138,8 @@ def main():
     # Write ssh.cfg (for role)
     create_ssh_config(data, outfile="roles/common/files/ssh.cfg")
 
+    #######################################################################
+
     all_worker_addresses_gpu = []
     all_worker_addresses_nogpu = []
     for worker_kind in worker_kinds:
@@ -160,11 +162,44 @@ def main():
         }
     result = src.substitute(d)
     del filein
-
     # Write inventory (for ansible)
     text_file = open("inventory", "w")
     text_file.write(result)
     text_file.close()
+
+    #######################################################################
+
+    # Substitute vars in template
+    filein = open("roles/rke/defaults/main.yml.template")
+
+    rke_control_nodes = ""
+    for idx, address in enumerate(data['illume-control-addresses']['value']):
+        rke_control_nodes += "  - illume-control-{:02d}".format(idx+1) + "\n"
+
+    # some worker nodes are GPU nodes, all worker nodes are storage nodes
+    rke_gpu_nodes = ""
+    rke_storage_nodes = ""
+    for worker_kind in worker_kinds:
+        for idx, address in enumerate(data['illume-worker-{}-addresses'.format(worker_kind)]['value']):
+            worker_name = "illume-worker-{}-{:02d}".format(worker_kind, idx+1)
+            if worker_kind != "nogpu":
+                rke_gpu_nodes += "  - " + worker_name + "\n"
+            rke_storage_nodes += "  - " + worker_name + "\n"
+
+    src = Template(filein.read())
+    d = {
+        'rke_control_nodes' : rke_control_nodes,
+        'rke_gpu_nodes'     : rke_gpu_nodes,
+        'rke_storage_nodes' : rke_storage_nodes
+        }
+    result = src.substitute(d)
+    del filein
+    # Write inventory (for ansible)
+    text_file = open("roles/rke/defaults/main.yml", "w")
+    text_file.write(result)
+    text_file.close()
+
+    #######################################################################
 
     # Substitute vars in cvmfs configuration
     cvmfs_proxies = ["http://"+x+":3128" for x in data['illume-proxy-addresses']['value']]
@@ -179,6 +214,8 @@ def main():
     text_file = open("roles/cvmfs/defaults/main.yml", "w")
     text_file.write(result)
     text_file.close()
+
+    #######################################################################
 
     # Write /etc/hosts file
     filein = open("roles/common/files/hosts.template")
@@ -199,6 +236,7 @@ def main():
     text_file.close()
     del filein
 
+    #######################################################################
 
     # create node configuration for rke
 

@@ -42,20 +42,39 @@
     force: yes
     backup: yes
 
-- name: install nvidia-device-plugin.yml
+- name: install kubernetes setup files
   copy:
-    src: ../files/nvidia-device-plugin.yml
-    dest: "/home/{{ ansible_user }}/nvidia-device-plugin.yml"
+    src: "../files/{{ item.name }}"
+    dest: "/home/{{ ansible_user }}/{{ item.name }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: "u=rw,g=r,o=r"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { name: '00_rke_up.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '02_nvidia-device-plugin.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '04_label_kube-system_namespace.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '05_illume-namespace.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '06_allow-namespace-illume.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '07_allow-dns-access.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '08_allow-public-internet.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '09_rook-operator.yaml', mode: 'u=rw,g=r,o=r' }
+    - { name: '10_wait_for_operator.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '12_rook-cluster.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '13_wait_for_rook-cluster.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '14_storage_pool_and_class.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '15_rook-tools.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '16_example-ubuntu-host.yml', mode: 'u=rw,g=r,o=r' }
 
-- name: install example-ubuntu-host.yml
-  copy:
-    src: ../files/example-ubuntu-host.yml
-    dest: "/home/{{ ansible_user }}/example-ubuntu-host.yml"
+- name: install kubernetes setup file templates
+  template:
+    src: "{{ item.name }}.j2"
+    dest: "/home/{{ ansible_user }}/{{ item.name }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: "u=rw,g=r,o=r"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { name: '01_taint_control_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '03_taint_gpu_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '11_label_storage_nodes.yml', mode: 'u=rw,g=r,o=r' }
 
 - meta: flush_handlers

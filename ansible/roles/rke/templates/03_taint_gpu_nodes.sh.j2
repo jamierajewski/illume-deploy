@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# taint GPU nodes so that only jobs specifically requesting GPUs end
+# up on them (the toleration is added automatically if GPUs are requested)
+{% for node in rke_gpu_nodes %}
+kubectl taint nodes {{ node }} nvidia.com/gpu=true:NoSchedule
+{% endfor %}

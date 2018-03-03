@@ -16,18 +16,14 @@ cd ~
 mkdir .kube
 cp kube_config_cluster.yml .kube/config
 
+# taint control nodes so that pods don't end up on them
+kubectl taint nodes illume-control-01 illume-control-02 illume-control-03 node-role.kubernetes.io/master=true:NoSchedule
+
 # install the nvidia device plugin
 kubectl create -f nvidia-device-plugin.yml
 
 # taint all GPU nodes
-kubectl taint nodes illume-worker-1080ti-01 nvidia.com/gpu=true:NoSchedule
-kubectl taint nodes illume-worker-1080ti-02 nvidia.com/gpu=true:NoSchedule
-kubectl taint nodes illume-worker-1080ti-03 nvidia.com/gpu=true:NoSchedule
-
-# taint control nodes so that pods don't end up on them
-kubectl taint nodes illume-control-01 node-role.kubernetes.io/master=true:NoSchedule
-kubectl taint nodes illume-control-02 node-role.kubernetes.io/master=true:NoSchedule
-kubectl taint nodes illume-control-03 node-role.kubernetes.io/master=true:NoSchedule
+kubectl taint nodes illume-worker-1080ti-01 illume-worker-1080ti-02  illume-worker-1080ti-03nvidia.com/gpu=true:NoSchedule
 
 
 # define some network policies:
@@ -35,6 +31,9 @@ kubectl taint nodes illume-control-03 node-role.kubernetes.io/master=true:NoSche
 # label the kube-system namespace so we can refer to it in our
 # NetworkPolicy definitions
 kubectl label namespace kube-system name=kube-system
+
+
+
 
 # create and label our namespace
 kubectl create -f - <<EOF
@@ -226,6 +225,7 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
    name: rook-block
+   namespace: rook
 provisioner: rook.io/block
 parameters:
   pool: replicapool

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# label storage nodes to use for rook/ceph storage
+{% for node in rke_storage_nodes %}
+kubectl label nodes {{ node }} role=storage-node
+{% endfor %}
+
+#kubectl label nodes illume-worker-1080ti-01 role=storage-node
+#kubectl label nodes illume-worker-1080ti-02 role=storage-node
+#kubectl label nodes illume-worker-1080ti-03 role=storage-node
+#kubectl label nodes illume-worker-nogpu-01 role=storage-node
+#kubectl label nodes illume-worker-nogpu-02 role=storage-node
+#kubectl label nodes illume-worker-nogpu-03 role=storage-node

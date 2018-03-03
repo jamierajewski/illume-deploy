@@ -16,3 +16,4 @@
 /terraform/.terraform
 /ansible/terraform.tfstate
 /ansible/roles/cvmfs/defaults/main.yml
+/ansible/roles/rke/defaults/main.yml
