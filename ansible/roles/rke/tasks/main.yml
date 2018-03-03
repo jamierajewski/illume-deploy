@@ -75,6 +75,6 @@
   with_items:
     - { name: '01_taint_control_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
     - { name: '03_taint_gpu_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '11_label_storage_nodes.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '11_label_storage_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
 
 - meta: flush_handlers
