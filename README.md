@@ -22,7 +22,7 @@ kubectl create -f 07_allow-dns-access.yml
 kubectl create -f 08_allow-public-internet.yml
 kubectl create -f 09_rook-operator.yaml
 ./10_wait_for_operator.sh
-kubectl create -f 11_label_storage_nodes.yml
+./11_label_storage_nodes.sh
 kubectl create -f 12_rook-cluster.yml
 ./13_wait_for_rook-cluster.sh
 kubectl create -f 14_storage_pool_and_class.yml
