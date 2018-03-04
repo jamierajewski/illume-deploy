@@ -26,5 +26,14 @@ kubectl create -f 09_rook-operator.yaml
 kubectl create -f 12_rook-cluster.yml
 ./13_wait_for_rook-cluster.sh
 kubectl create -f 14_storage_pool_and_class.yml
+
 kubectl create -f 15_rook-tools.yml
+kubectl -n rook exec -it rook-tools bash
+rookctl status
+ceph df
+rados df
+exit
+kubectl delete -f 15_rook-tools.yml
+
 kubectl create -f 16_example-ubuntu-host.yml
+kubectl -n illume get pods
