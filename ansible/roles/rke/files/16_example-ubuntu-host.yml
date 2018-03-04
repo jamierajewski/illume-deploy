@@ -59,4 +59,3 @@ spec:
       - name: cvmfs
         hostPath:
           path: "/cvmfs"
-          type: Directory
