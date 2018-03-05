@@ -1,4 +1,7 @@
 #!/usr/bin/env kubectl apply -f
+# might want to use a LoadBalancer in ther service instead if available
+# - we just don't have those in our cluster. When using a load balancer
+# we would not need this to configure the nginx-ingress.
 kind: ConfigMap
 apiVersion: v1
 metadata:

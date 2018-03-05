@@ -1,6 +1,8 @@
 #!/usr/bin/env kubectl apply -f
 apiVersion: v1
 kind: Service
+# if available on the cluster: use a load balancer here
+# (we just don't have those)
 metadata:
   name: htcondor-submitter
   namespace: illume
