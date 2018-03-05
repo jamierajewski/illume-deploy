@@ -1,13 +1,14 @@
-FROM centos:7
+# We will need GPU access in these images,
+# so base on nvidia/cuda, which is in turn
+# based on centos:7.
+FROM nvidia/cuda:9.1-cudnn7-devel-centos7
 
 MAINTAINER Claudio Kopper <kopper@ualberta.ca>
 
-# Install condor
-RUN yum -y install wget python-requests && \
-    cd /etc/yum.repos.d && wget http://research.cs.wisc.edu/htcondor/yum/repo.d/htcondor-stable-rhel7.repo && \
-    wget http://research.cs.wisc.edu/htcondor/yum/RPM-GPG-KEY-HTCondor && rpm --import RPM-GPG-KEY-HTCondor && \
-    yum -y install condor && \
-    yum -y clean all && rm -rf /var/cache/yum
+# Make the nvidia tools available on the system in case we
+# log intothe container through ssh
+COPY nvidia.sh  /etc/profile.d/nvidia.sh
+COPY nvidia.csh /etc/profile.d/nvidia.csh
 
 # Install ssh, supervisord and ldap tools
 RUN yum -y install openssh openssh-clients openssh-server && \
@@ -32,10 +33,10 @@ RUN yum -y groups mark convert && \
            libXt mesa-libGL-devel numpy octave octave-devel openssl098e p7zip \
            p7zip-plugins python-astropy python-devel R-devel redhat-lsb-core \
            rsync scipy subversion tcl-devel tcsh time tk-devel wget which \
-           lzo squashfs-tools mc && \
+           lzo squashfs-tools mc python-requests tmux mosh strace && \
     yum -y clean all && rm -rf /var/cache/yum
 
-# Install Singularity (in directory-mode only, no loopback mounted images right now,
+# Install Singularity (in directory-mode only, no loopback mounted images for now,
 # those do not work well in docker [or need many more privileges...])
 #COPY --from=singularity_builder /root/rpmbuild/RPMS/x86_64/singularity-*.rpm /root/
 COPY singularity-*.rpm /root/
