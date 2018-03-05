@@ -1,3 +1,11 @@
+- name: download and install kubectl
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/v1.9.3/bin/linux/amd64/kubectl
+    checksum: sha256:81eb30e62a12d6e0527a6a3c2a9501b56d65777bf66684739b16a0afe826c8f8
+    dest: /usr/local/bin/kubectl
+    mode: 0555
+  become: true
+
 #- name: download rke
 #  get_url:
 #    url: https://github.com/rancher/rke/releases/download/v0.1.1/rke
@@ -64,6 +72,10 @@
     - { name: '14_storage_pool_and_class.yml', mode: 'u=rw,g=r,o=r' }
     - { name: '15_rook-tools.yml', mode: 'u=rw,g=r,o=r' }
     - { name: '16_example-ubuntu-host.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '17_kubernetes-dashboard.yaml', mode: 'u=rw,g=r,o=r' }
+    - { name: '18_kubernetes-dashboard-sample-user.yaml', mode: 'u=rw,g=r,o=r' }
+    - { name: '19_get-dashboard-sample-user-bearer-token.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '20_access_dashboard.txt', mode: 'u=rw,g=r,o=r' }
 
 - name: install kubernetes setup file templates
   template:
