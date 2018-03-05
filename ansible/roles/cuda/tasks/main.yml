@@ -86,7 +86,7 @@
   systemd:
     name: nvidia-max-power-limit
     daemon_reload: yes
-    state: restarted
+    state: started
     enabled: yes
   become: true
   when: "_modprobe_nvidia_uvm.rc == 0"
