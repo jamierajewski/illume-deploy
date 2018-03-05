@@ -1,0 +1,53 @@
+#!/usr/bin/env kubectl apply -f
+apiVersion: v1
+kind: Service
+metadata:
+  name: openldap-admin
+  namespace: illume
+  labels:
+    app: openldap-admin
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: openldap-admin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openldap-admin
+  namespace: illume
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: openldap-admin
+  template:
+    metadata:
+      labels:
+        app: openldap-admin
+    spec:
+      containers:
+      - image: dinkel/phpldapadmin:latest
+        name: openldap-admin
+        ports:
+        - containerPort: 80
+        env:
+        - name: LDAP_SERVER_HOST
+          value: "openldap.illume"
+        - name: LDAP_SERVER_PORT
+          value: "389"
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-all-for-openldap-admin
+  namespace: illume
+spec:
+  podSelector:
+    matchLabels:
+      app: openldap-admin
+  ingress:
+  - {}

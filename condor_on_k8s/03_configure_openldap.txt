@@ -1,0 +1,9 @@
+```
+ssh -L 8001:127.0.0.1:8001 -F ssh.cfg illume-bastion
+kubectl proxy
+```
+
+connect to: http://localhost:8001/api/v1/namespaces/illume/services/http:openldap-admin:/proxy/
+and configure LDAP users if necessary:
+(default cn=username,dc=illume,dc=systems/password will be admin/geheim if LDAP had never
+been configured before - please change after first log in)

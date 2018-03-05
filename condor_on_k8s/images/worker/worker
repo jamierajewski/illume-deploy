@@ -1,0 +1,17 @@
+DAEMON_LIST = MASTER, STARTD
+
+# Disable preemption
+PREEMPT=FALSE
+RANK=0
+
+# Disable cgroups
+BASE_CGROUP =
+
+# Enable GPU discovery
+use feature : GPUs
+GPU_DISCOVERY_EXTRA = -extra
+
+# job defaults
+JOB_DEFAULT_REQUESTMEMORY = ifthenelse(MemoryUsage =!= UNDEFINED,MemoryUsage,1024)
+JOB_DEFAULT_REQUESTCPUS = 1
+JOB_DEFAULT_REQUESTDISK = 1024

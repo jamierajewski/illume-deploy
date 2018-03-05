@@ -1,0 +1,8 @@
+#!/usr/bin/env kubectl apply -f
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: tcp-services
+  namespace: ingress-nginx
+data:
+  22: "illume/htcondor-submitter:22"

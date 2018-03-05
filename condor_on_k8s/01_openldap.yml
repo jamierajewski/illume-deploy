@@ -1,0 +1,55 @@
+#!/usr/bin/env kubectl apply -f
+apiVersion: v1
+kind: Service
+metadata:
+  name: openldap
+  namespace: illume
+  labels:
+    app: openldap
+spec:
+  ports:
+  - port: 389
+    protocol: TCP
+  selector:
+    app: openldap
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openldap
+  namespace: illume
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: openldap
+  template:
+    metadata:
+      labels:
+        app: openldap
+    spec:
+      containers:
+      - image: dinkel/openldap
+        name: openldap
+        ports:
+        - containerPort: 389
+        env:
+        - name: SLAPD_PASSWORD
+          value: "geheim"
+        - name: SLAPD_DOMAIN
+          value: "illume.systems"
+        - name: SLAPD_ORGANIZATION
+          value: "Illume Systems"
+        volumeMounts:
+        - name: datadir
+          mountPath: /etc/ldap
+          subPath: illume/ldap_etc
+        - name: datadir
+          mountPath: /var/lib/ldap
+          subPath: illume/ldap_var
+      volumes:
+      - name: datadir
+        nfs:
+          server: 192.168.19.2
+          path: "/mnt/tank/export/scratch/icecube"

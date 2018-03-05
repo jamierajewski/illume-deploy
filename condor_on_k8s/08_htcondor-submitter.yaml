@@ -1,0 +1,126 @@
+#!/usr/bin/env kubectl apply -f
+apiVersion: v1
+kind: Service
+metadata:
+  name: htcondor-submitter
+  namespace: illume
+  labels:
+    name: htcondor-submitter
+spec:
+  ports:
+    - name: "ssh"
+      port: 22
+  selector:
+    app: htcondor-submitter
+---
+# the service needs to be reachable on port 22
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ssh-to-htcondor-submitter
+  namespace: illume
+spec:
+  podSelector:
+    matchLabels:
+      app: htcondor-submitter
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 22
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: htcondor-submitter
+  namespace: illume
+spec:
+  replicas: 1
+  # we can handle parallel deployment
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: htcondor-submitter
+  serviceName: "htcondor-submitter"
+  template:
+    metadata:
+      labels:
+        app: htcondor-submitter
+      # we need this to make Singularity work: (more privileges)
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/htcondor-submitter: unconfined
+    spec:
+      containers:
+      - name: htcondor-submitter
+        image: illumecluster/htcondor-schedd:latest
+        resources:
+          requests:
+            memory: "2.0Gi"
+            cpu: "1000m"
+          limits:
+            memory: "2.0Gi"
+            cpu: "1000m"
+        # we need this to make Singularity work: (more privileges)
+        securityContext:
+          capabilities:
+            add:
+              - SYS_ADMIN
+        env:
+        - name: CONDOR_HOST
+          value: "htcondor-collector"
+        - name: SEC_PASSWORD_FILE
+          value: "/etc/condor/pool_password/password"
+        - name: LDAP_SERVER
+          value: "openldap.illume"
+        - name: LDAP_BASEDN
+          value: "dc=illume,dc=systems"
+        volumeMounts:
+          - name: pool-password
+            mountPath: /etc/condor/pool_password
+          - name: ssh-host-keys
+            mountPath: /etc/ssh-host-keys
+          - name: homedir
+            mountPath: /home
+            subPath: illume/home
+          - name: cvmfs
+            mountPath: /cvmfs
+          - name: scratch
+            mountPath: /scratch
+        ports:
+        - containerPort: 9618
+          protocol: TCP
+        - containerPort: 22
+          protocol: TCP
+        livenessProbe:
+          exec:
+            command:
+            - /usr/local/bin/htcondor-schedd-liveness
+          initialDelaySeconds: 10
+          periodSeconds: 30
+      volumes:
+      - name: pool-password
+        secret:
+          defaultMode: 0600
+          secretName: htcondor-pool-password
+      - name: ssh-host-keys
+        secret:
+          defaultMode: 0600
+          secretName: ssh-host-keys
+      - name: homedir
+        nfs:
+          server: 192.168.19.2
+          path: "/mnt/tank/export/scratch/icecube"
+      - name: cvmfs
+        hostPath:
+          path: "/cvmfs"
+  volumeClaimTemplates:
+  # provision 100GiB of scratch storage per worker
+  - metadata:
+      name: scratch
+      namespace: illume
+    spec:
+      storageClassName: rook-block
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 100Gi
