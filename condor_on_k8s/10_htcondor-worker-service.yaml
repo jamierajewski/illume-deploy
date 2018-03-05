@@ -1,0 +1,11 @@
+# StatefulSets need a service, even if we do
+# not expose any ports
+apiVersion: v1
+kind: Service
+metadata:
+  name: illume-work
+  namespace: illume
+spec:
+  clusterIP: None
+  selector:
+    app: illume-work

@@ -1,20 +1,9 @@
-#!/usr/bin/env kubectl apply -f
-apiVersion: v1
-kind: Service
-metadata:
-  name: illume-work
-  namespace: illume
-  labels:
-    app: illume-work
-spec:
-  clusterIP: None
-  selector:
-    app: illume-work
----
+# Implemented as a StatefulSet so we can have a volume mount per pod,
+# since we want to have per-pod/per-worker scratch space.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: illume-work
+  name: illume-work-nogpu
   namespace: illume
 spec:
   replicas: 1
@@ -23,11 +12,13 @@ spec:
   selector:
     matchLabels:
       app: illume-work
+      kind: nogpu
   serviceName: "illume-work"
   template:
     metadata:
       labels:
         app: illume-work
+        kind: nogpu
       # we need this to make Singularity work: (more privileges)
       annotations:
         container.apparmor.security.beta.kubernetes.io/work: unconfined
