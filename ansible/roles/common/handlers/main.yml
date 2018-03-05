@@ -20,10 +20,3 @@
     delay: 60
     timeout: 600
   listen: "reboot host and wait"
-
-- name: restart docker
-  systemd:
-    name: docker
-    daemon_reload: yes
-    state: restarted
-  become: true
