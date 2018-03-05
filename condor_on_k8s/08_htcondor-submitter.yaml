@@ -4,27 +4,27 @@ kind: Service
 # if available on the cluster: use a load balancer here
 # (we just don't have those)
 metadata:
-  name: htcondor-submitter
+  name: illume-sub
   namespace: illume
   labels:
-    name: htcondor-submitter
+    name: illume-sub
 spec:
   ports:
     - name: "ssh"
       port: 22
   selector:
-    app: htcondor-submitter
+    app: illume-sub
 ---
 # the service needs to be reachable on port 22
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-ssh-to-htcondor-submitter
+  name: allow-ssh-to-illume-sub
   namespace: illume
 spec:
   podSelector:
     matchLabels:
-      app: htcondor-submitter
+      app: illume-sub
   ingress:
   - ports:
     - protocol: TCP
@@ -33,7 +33,7 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: htcondor-submitter
+  name: illume-sub
   namespace: illume
 spec:
   replicas: 1
@@ -41,18 +41,18 @@ spec:
   podManagementPolicy: Parallel
   selector:
     matchLabels:
-      app: htcondor-submitter
-  serviceName: "htcondor-submitter"
+      app: illume-sub
+  serviceName: "illume-sub"
   template:
     metadata:
       labels:
-        app: htcondor-submitter
+        app: illume-sub
       # we need this to make Singularity work: (more privileges)
       annotations:
-        container.apparmor.security.beta.kubernetes.io/htcondor-submitter: unconfined
+        container.apparmor.security.beta.kubernetes.io/sub: unconfined
     spec:
       containers:
-      - name: htcondor-submitter
+      - name: sub
         image: illumecluster/htcondor-schedd:latest
         resources:
           requests:
@@ -68,7 +68,7 @@ spec:
               - SYS_ADMIN
         env:
         - name: CONDOR_HOST
-          value: "htcondor-collector"
+          value: "illume-coll"
         - name: SEC_PASSWORD_FILE
           value: "/etc/condor/pool_password/password"
         - name: LDAP_SERVER

@@ -2,37 +2,37 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: htcondor-collector
+  name: illume-coll
   namespace: illume
   labels:
-    name: htcondor-collector
+    name: illume-coll
 spec:
   ports:
     - port: 9618
   selector:
-    app: htcondor-collector
+    app: illume-coll
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: htcondor-collector
+  name: illume-coll
   namespace: illume
   labels:
-    app: htcondor-collector
+    app: illume-coll
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: htcondor-collector
+      app: illume-coll
   template:
     metadata:
       labels:
-        app: htcondor-collector
+        app: illume-coll
     spec:
       containers:
-      - name: htcondor-collector
+      - name: coll
         image: illumecluster/htcondor-collector:latest
         resources:
           requests:
@@ -43,7 +43,7 @@ spec:
             cpu: "1000m"
         env:
         - name: CONDOR_HOST
-          value: "htcondor-collector"
+          value: "illume-coll"
         - name: SEC_PASSWORD_FILE
           value: "/etc/condor/pool_password/password"
         volumeMounts:
@@ -69,24 +69,24 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: htcondor-negotiator
+  name: illume-neg
   namespace: illume
   labels:
-    app: htcondor-negotiator
+    app: illume-neg
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: htcondor-negotiator
+      app: illume-neg
   template:
     metadata:
       labels:
-        app: htcondor-negotiator
+        app: illume-neg
     spec:
       containers:
-      - name: htcondor-negotiator
+      - name: neg
         image: illumecluster/htcondor-negotiator:latest
         resources:
           requests:
@@ -97,7 +97,7 @@ spec:
             cpu: "1000m"
         env:
         - name: CONDOR_HOST
-          value: "htcondor-collector"
+          value: "illume-coll"
         - name: SEC_PASSWORD_FILE
           value: "/etc/condor/pool_password/password"
         volumeMounts:

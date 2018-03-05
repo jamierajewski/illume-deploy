@@ -2,19 +2,19 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: htcondor-worker
+  name: illume-work
   namespace: illume
   labels:
-    app: htcondor-worker
+    app: illume-work
 spec:
   clusterIP: None
   selector:
-    app: htcondor-worker
+    app: illume-work
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: htcondor-worker
+  name: illume-work
   namespace: illume
 spec:
   replicas: 1
@@ -22,18 +22,18 @@ spec:
   podManagementPolicy: Parallel
   selector:
     matchLabels:
-      app: htcondor-worker
-  serviceName: "htcondor-worker"
+      app: illume-work
+  serviceName: "illume-work"
   template:
     metadata:
       labels:
-        app: htcondor-worker
+        app: illume-work
       # we need this to make Singularity work: (more privileges)
       annotations:
-        container.apparmor.security.beta.kubernetes.io/htcondor-worker: unconfined
+        container.apparmor.security.beta.kubernetes.io/work: unconfined
     spec:
       containers:
-      - name: htcondor-worker
+      - name: work
         image: illumecluster/htcondor-worker:latest
         resources:
           requests:
@@ -49,7 +49,7 @@ spec:
               - SYS_ADMIN
         env:
         - name: CONDOR_HOST
-          value: "htcondor-collector"
+          value: "illume-coll"
         - name: SEC_PASSWORD_FILE
           value: "/etc/condor/pool_password/password"
         - name: CONDOR_SCRATCH
@@ -62,12 +62,12 @@ spec:
         - name: CPU_LIMIT
           valueFrom:
             resourceFieldRef:
-              containerName: htcondor-worker
+              containerName: work
               resource: limits.cpu
         - name: MEM_LIMIT
           valueFrom:
             resourceFieldRef:
-              containerName: htcondor-worker
+              containerName: work
               resource: limits.memory
         volumeMounts:
           - name: pool-password
