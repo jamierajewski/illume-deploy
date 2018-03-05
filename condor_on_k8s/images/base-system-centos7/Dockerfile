@@ -10,6 +10,13 @@ MAINTAINER Claudio Kopper <kopper@ualberta.ca>
 COPY nvidia.sh  /etc/profile.d/nvidia.sh
 COPY nvidia.csh /etc/profile.d/nvidia.csh
 
+# Enable OpenCL
+RUN yum install -y epel-release && \
+    yum install -y ocl-icd ocl-icd-devel clinfo && \
+    rm -rf /var/cache/yum && \
+    mkdir -p /etc/OpenCL/vendors && \
+    echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd
+
 # Install ssh, supervisord and ldap tools
 RUN yum -y install openssh openssh-clients openssh-server && \
     mkdir -p /var/log/ssh && \
