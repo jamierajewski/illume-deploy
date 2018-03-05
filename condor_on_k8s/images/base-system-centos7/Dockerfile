@@ -30,7 +30,10 @@ RUN yum -y install openssh openssh-clients openssh-server && \
 # Install compilers and other tools
 RUN yum -y groups mark convert && \
     yum -y grouplist && \
-    yum -y groupinstall "Compatibility Libraries" "Development Tools" "Scientific Support" && \
+    yum -y groupinstall \
+           "Compatibility Libraries" \
+           "Development Tools" \
+           "Scientific Support" && \
     yum -y install nano astropy-tools bc binutils binutils-devel coreutils \
            curl fontconfig gcc gcc-c++ gcc-gfortran git glew-devel glib2-devel \
            glib-devel graphviz gsl-devel java-1.8.0-openjdk java-1.8.0-openjdk-devel \
