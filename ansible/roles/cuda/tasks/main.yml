@@ -98,6 +98,14 @@
   become: true
   when: "_modprobe_nvidia_uvm.rc == 0"
 
+- name: disable lightdm.service Xorg window manager
+  systemd:
+    name: lightdm
+    state: stopped
+    enabled: no
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
 - name: install set-gpu-fans scripts
   copy:
     src: ../files/set-gpu-fans/
