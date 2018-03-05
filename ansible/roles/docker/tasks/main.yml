@@ -1,0 +1,83 @@
+- name: install basic docker dependencies
+  apt:
+    name: apt-transport-https,ca-certificates,curl,software-properties-common
+  become: true
+  async: 1000
+  poll: 10
+
+- name: add the docker repository apt key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  become: true
+
+- name: add the docker repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+    state: present
+  become: true
+
+- name: install docker
+  apt:
+    name: docker-ce=17.03.2~ce-0~ubuntu-xenial
+    update_cache: yes
+    force: yes
+  become: true
+  async: 1000
+  poll: 10
+
+- name: hold docker-ce package at installed version
+  dpkg_selections:
+    name: docker-ce
+    selection: hold
+  become: true
+
+- name: make sure the remote ("ubuntu") user is a member of the docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
+  become: true
+  notify:
+    - reboot host and wait
+
+- name: create /etc/systemd/system/docker.service.d directory
+  file:
+    path: "/etc/systemd/system/docker.service.d"
+    state: directory
+  become: true
+
+- name: install /etc/systemd/system/docker.service.d/override.conf
+  template:
+    src: override.conf.j2
+    dest: /etc/systemd/system/docker.service.d/override.conf
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+    force: yes
+  become: true
+  notify:
+    - restart docker
+
+- name: enable and start docker.service
+  systemd:
+    name: docker.service
+    state: started
+    daemon_reload: yes
+    enabled: yes
+  become: true
+
+- name: check if we should reboot the system
+  stat:
+    path: /var/run/reboot-required
+    get_md5: no
+  register: rebootfile
+  become: true
+
+- name: trigger reboot if previous check succeeded
+  command: /bin/true
+  when: rebootfile.stat.exists == true
+  notify:
+    - reboot host and wait
+
+- meta: flush_handlers

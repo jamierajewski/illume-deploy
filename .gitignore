@@ -17,3 +17,4 @@
 /ansible/terraform.tfstate
 /ansible/roles/cvmfs/defaults/main.yml
 /ansible/roles/rke/defaults/main.yml
+/ansible/roles/docker/defaults/main.yml

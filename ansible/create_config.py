@@ -217,6 +217,22 @@ def main():
 
     #######################################################################
 
+    # Substitute vars in docker configuration
+    http_proxies = ["  - http://"+x+":3128/" for x in data['illume-proxy-addresses']['value']]
+    http_proxies = '\n'.join(http_proxies)
+
+    filein = open("roles/docker/defaults/main.yml.template")
+    src = Template(filein.read())
+    d = {'http_proxies' : http_proxies, }
+    result = src.substitute(d)
+    del filein
+    # Write inventory (for ansible)
+    text_file = open("roles/docker/defaults/main.yml", "w")
+    text_file.write(result)
+    text_file.close()
+
+    #######################################################################
+
     # Write /etc/hosts file
     filein = open("roles/common/files/hosts.template")
     text_file = open("roles/common/files/hosts", "w")
