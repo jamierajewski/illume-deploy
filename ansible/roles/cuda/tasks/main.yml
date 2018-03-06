@@ -141,14 +141,30 @@
   become: true
   when: "_modprobe_nvidia_uvm.rc == 0"
 
+# somehow this doesn't work on Ubuntu 16.04
 - name: enable and start the set-gpu-fans.service
   systemd:
     name: set-gpu-fans
     daemon_reload: true
-    state: started
-    enabled: yes
+    #state: started
+    state: stopped # use rc.local as a work-around for now
+    #enabled: yes
+    enabled: no # use rc.local as a work-around for now
   become: true
   when: "_modprobe_nvidia_uvm.rc == 0"
+
+
+- name: Make sure set-gpu-fans is the default runtime
+  lineinfile:
+    dest=/etc/rc.local
+    regexp='^set-gpu-fans'
+    line='/opt/set-gpu-fans/cool_gpu >/dev/null 2>&1 &'
+    insertbefore='^exit 0'
+    state=present
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+  notify:
+    - reboot host and wait
 
 
 - name: check if we should reboot the system
