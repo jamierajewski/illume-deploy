@@ -1,3 +1,20 @@
+# if you run `kubectl -n rook exec -ti rook-tools rookctl status` later and get this:
+#
+# ```
+# OVERALL STATUS: WARNING
+#
+# SUMMARY:
+# SEVERITY   NAME          MESSAGE
+# WARNING    TOO_FEW_PGS   too few PGs per OSD (15 < min 30)
+# ```
+#
+# you might need to increase pg_num and pgp_num
+# rook status
+# The manual says: `The general rule of thumb is that you want around 100 PGs per OSD.`
+# ceph osd pool get replicapool pg_num
+# ceph osd pool set replicapool pg_num <new>
+# ceph osd pool set replicapool pgp_num <new>
+
 apiVersion: rook.io/v1alpha1
 kind: Pool
 metadata:
@@ -15,4 +32,3 @@ metadata:
 provisioner: rook.io/block
 parameters:
   pool: replicapool
-
