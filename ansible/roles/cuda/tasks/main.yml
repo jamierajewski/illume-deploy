@@ -145,7 +145,7 @@
   systemd:
     name: set-gpu-fans
     daemon_reload: true
-    state: restarted
+    state: started
     enabled: yes
   become: true
   when: "_modprobe_nvidia_uvm.rc == 0"
