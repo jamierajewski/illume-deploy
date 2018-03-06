@@ -1,0 +1,99 @@
+# Implemented as a StatefulSet so we can have a volume mount per pod,
+# since we want to have per-pod/per-worker scratch space.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: illume-work-nogpu-small
+  namespace: illume
+spec:
+  replicas: 1
+  # we can handle parallel deployment
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: illume-work
+      kind: nogpu-small
+  serviceName: "illume-work"
+  template:
+    metadata:
+      labels:
+        app: illume-work
+        kind: nogpu-small
+      # we need this to make Singularity work: (more privileges)
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/work: unconfined
+    spec:
+      containers:
+      - name: work
+        image: illumecluster/htcondor-worker:latest
+        resources:
+          requests:
+            memory: "8Gi"     # 8GiB of memory per core
+            cpu: "1000m"      # 1 CPU core
+          limits:
+            memory: "8Gi"     # 8GiB of memory per core
+            cpu: "1000m"      # 1 CPU core
+        # we need this to make Singularity work: (more privileges)
+        securityContext:
+          capabilities:
+            add:
+              - SYS_ADMIN
+        env:
+        - name: CONDOR_HOST
+          value: "illume-coll"
+        - name: SEC_PASSWORD_FILE
+          value: "/etc/condor/pool_password/password"
+        - name: CONDOR_SCRATCH
+          value: "/scratch"
+        - name: LDAP_SERVER
+          value: "openldap.illume"
+        - name: LDAP_BASEDN
+          value: "dc=illume,dc=systems"
+        # let condor know about out CPU and memory limits
+        - name: CPU_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: work
+              resource: limits.cpu
+        - name: MEM_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: work
+              resource: limits.memory
+        volumeMounts:
+          - name: pool-password
+            mountPath: /etc/condor/pool_password
+          - name: homedir
+            mountPath: /home
+            subPath: illume/home
+          - name: cvmfs
+            mountPath: /cvmfs
+          - name: scratch
+            mountPath: /scratch
+        ports:
+        - containerPort: 9618
+          protocol: TCP
+      volumes:
+      - name: pool-password
+        secret:
+          defaultMode: 0600
+          secretName: htcondor-pool-password
+      - name: homedir
+        nfs:
+          server: 192.168.19.2
+          path: "/mnt/tank/export/scratch/icecube"
+      - name: cvmfs
+        hostPath:
+          path: "/cvmfs"
+  volumeClaimTemplates:
+  # provision 400GiB of scratch storage per worker
+  - metadata:
+      name: scratch
+      namespace: illume
+    spec:
+      storageClassName: rook-block
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 400Gi

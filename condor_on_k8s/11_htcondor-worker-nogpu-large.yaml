@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: illume-work-gpu
+  name: illume-work-nogpu-large
   namespace: illume
 spec:
   replicas: 1
@@ -12,13 +12,13 @@ spec:
   selector:
     matchLabels:
       app: illume-work
-      kind: gpu
+      kind: nogpu-large
   serviceName: "illume-work"
   template:
     metadata:
       labels:
         app: illume-work
-        kind: gpu
+        kind: nogpu-large
       # we need this to make Singularity work: (more privileges)
       annotations:
         container.apparmor.security.beta.kubernetes.io/work: unconfined
@@ -28,13 +28,11 @@ spec:
         image: illumecluster/htcondor-worker:latest
         resources:
           requests:
-            memory: "24Gi"    # 6GiB of memory per core
-            cpu: "4000m"      # 4 full CPU cores
-            nvidia.com/gpu: 4 # request 4 GPUs (one CPU core per GPU)
+            memory: "48Gi"    # 8GiB of memory per core
+            cpu: "6000m"      # 6 CPU cores
           limits:
-            memory: "24Gi"    # 6GiB of memory per core
-            cpu: "4000m"      # 4 full CPU cores
-            nvidia.com/gpu: 4 # request 4 GPUs (one CPU core per GPU)
+            memory: "48Gi"    # 8GiB of memory per core
+            cpu: "6000m"      # 6 CPU cores
         # we need this to make Singularity work: (more privileges)
         securityContext:
           capabilities:
