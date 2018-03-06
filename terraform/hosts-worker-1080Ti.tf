@@ -1,7 +1,7 @@
 resource "openstack_compute_instance_v2" "illume-worker-1080ti" {
     depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion"]
 
-    count = 3
+    count = 11
     name = "${format("illume-worker-1080ti-%02d", count.index+1)}"
 
     image_id        = "${openstack_images_image_v2.illume-ubuntu.id}"
