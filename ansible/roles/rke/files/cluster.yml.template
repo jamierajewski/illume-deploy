@@ -9,24 +9,25 @@ services:
   kube-api:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,CPUManager=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
      admission-control: "ExtendedResourceToleration"
     service_cluster_ip_range: 10.233.0.0/18
     pod_security_policy: false
   kube-controller:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,CPUManager=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
     cluster_cidr: 10.233.64.0/18
     service_cluster_ip_range: 10.233.0.0/18
   scheduler:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,CPUManager=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
   kubelet:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,CPUManager=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
+     cpu-manager-policy: static
     cluster_domain: cluster.local
     infra_container_image: gcr.io/google_containers/pause-amd64:3.0
     cluster_dns_server: 10.233.0.3
@@ -34,7 +35,7 @@ services:
   kubeproxy:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,CPUManager=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
 
 network:
   plugin: canal
