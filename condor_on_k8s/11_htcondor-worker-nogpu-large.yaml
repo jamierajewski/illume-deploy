@@ -1,5 +1,7 @@
 # Implemented as a StatefulSet so we can have a volume mount per pod,
 # since we want to have per-pod/per-worker scratch space.
+# TODO: we got rid of the volume mounts - this doe snot need to be a StatefulSet
+# anymore - revert to Deployment?
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
