@@ -85,15 +85,6 @@ spec:
       - name: cvmfs
         hostPath:
           path: "/cvmfs"
-  volumeClaimTemplates:
-  # provision 400GiB of scratch storage per worker
-  - metadata:
-      name: scratch
-      namespace: illume
-    spec:
-      storageClassName: rook-block
-      accessModes:
-      - ReadWriteOnce
-      resources:
-        requests:
-          storage: 400Gi
+      - name: scratch
+        emptyDir:
+          sizeLimit: 600Gi

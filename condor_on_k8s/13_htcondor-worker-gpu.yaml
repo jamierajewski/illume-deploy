@@ -29,11 +29,11 @@ spec:
         resources:
           requests:
             memory: "56Gi"    # 8GiB of memory per core
-            cpu: "7000m"      # 7 CPU cores
+            cpu: "7"          # 7 CPU cores
             nvidia.com/gpu: 4 # request 4 GPUs (one CPU core per GPU)
           limits:
             memory: "56Gi"    # 8GiB of memory per core
-            cpu: "7000m"      # 7 CPU cores
+            cpu: "7"          # 7 CPU cores
             nvidia.com/gpu: 4 # request 4 GPUs (one CPU core per GPU)
         # we need this to make Singularity work: (more privileges)
         securityContext:
@@ -87,15 +87,6 @@ spec:
       - name: cvmfs
         hostPath:
           path: "/cvmfs"
-  volumeClaimTemplates:
-  # provision 400GiB of scratch storage per worker
-  - metadata:
-      name: scratch
-      namespace: illume
-    spec:
-      storageClassName: rook-block
-      accessModes:
-      - ReadWriteOnce
-      resources:
-        requests:
-          storage: 400Gi
+      - name: scratch
+        emptyDir:
+          sizeLimit: 700Gi
