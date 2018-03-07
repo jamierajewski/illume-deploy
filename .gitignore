@@ -18,3 +18,4 @@
 /ansible/roles/cvmfs/defaults/main.yml
 /ansible/roles/rke/defaults/main.yml
 /ansible/roles/docker/defaults/main.yml
+/ansible/playbook_cleanup.retry
