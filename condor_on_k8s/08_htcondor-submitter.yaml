@@ -51,21 +51,49 @@ spec:
       annotations:
         container.apparmor.security.beta.kubernetes.io/sub: unconfined
     spec:
+      initContainers:
+      - name: create-scratch-loopback
+        # create the /scratch/scratch_loop directory before starting anything else
+        image: ubuntu:16.04
+        command: ["/bin/sh"]
+        # TODO: get the size (count) from the pod spec via env
+        args: ["-c", "/usr/bin/truncate -s 100G /scratch/scratch.img && mkfs.ext4 /scratch/scratch.img && mkdir -p /scratch/scratch_loop"]
+        volumeMounts:
+          - name: scratch
+            mountPath: /scratch
       containers:
+      - name: scratch-loopback
+        image: ubuntu:16.04
+        command: ["/bin/sh"]
+        args: ["-c", "mount -o loop /scratch/scratch.img /scratch/scratch_loop && /bin/sleep infinity"]
+        lifecycle:
+          preStop:
+            exec:
+              # Do a lazy unmount of the loopback /scratch we created in the initContainer.
+              command: ["/bin/umount","-l","/scratch"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: scratch
+            mountPath: /scratch
+            mountPropagation: Bidirectional
       - name: sub
         image: illumecluster/htcondor-schedd:latest
         resources:
           requests:
-            memory: "2.0Gi"
+            memory: "8.0Gi"
             cpu: "1000m"
+            ephemeral-storage: "30Gi" # this is everything except for scratch
           limits:
-            memory: "2.0Gi"
+            memory: "8.0Gi"
             cpu: "1000m"
+            ephemeral-storage: "30Gi" # this is everything except for scratch
         # we need this to make Singularity work: (more privileges)
         securityContext:
           capabilities:
             add:
               - SYS_ADMIN
+
         env:
         - name: CONDOR_HOST
           value: "illume-coll"
@@ -87,6 +115,7 @@ spec:
             mountPath: /cvmfs
           - name: scratch
             mountPath: /scratch
+            subPath: scratch_loop
         ports:
         - containerPort: 9618
           protocol: TCP

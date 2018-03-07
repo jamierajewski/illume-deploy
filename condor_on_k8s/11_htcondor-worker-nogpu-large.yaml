@@ -23,16 +23,43 @@ spec:
       annotations:
         container.apparmor.security.beta.kubernetes.io/work: unconfined
     spec:
+      initContainers:
+      - name: create-scratch-loopback
+        # create the /scratch/scratch_loop directory before starting anything else
+        image: ubuntu:16.04
+        command: ["/bin/sh"]
+        # TODO: get the size (count) from the pod spec via env
+        args: ["-c", "/usr/bin/truncate -s 600G /scratch/scratch.img && mkfs.ext4 /scratch/scratch.img && mkdir -p /scratch/scratch_loop"]
+        volumeMounts:
+          - name: scratch
+            mountPath: /scratch
       containers:
+      - name: scratch-loopback
+        image: ubuntu:16.04
+        command: ["/bin/sh"]
+        args: ["-c", "mount -o loop /scratch/scratch.img /scratch/scratch_loop && /bin/sleep infinity"]
+        lifecycle:
+          preStop:
+            exec:
+              # Do a lazy unmount of the loopback /scratch we created in the initContainer.
+              command: ["/bin/umount","-l","/scratch"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: scratch
+            mountPath: /scratch
+            mountPropagation: Bidirectional
       - name: work
         image: illumecluster/htcondor-worker:latest
         resources:
           requests:
             memory: "48Gi"    # 8GiB of memory per core
             cpu: "6000m"      # 6 CPU cores
+            ephemeral-storage: "30Gi" # this is everything except for scratch
           limits:
             memory: "48Gi"    # 8GiB of memory per core
             cpu: "6000m"      # 6 CPU cores
+            ephemeral-storage: "30Gi" # this is everything except for scratch
         # we need this to make Singularity work: (more privileges)
         securityContext:
           capabilities:
@@ -70,6 +97,7 @@ spec:
             mountPath: /cvmfs
           - name: scratch
             mountPath: /scratch
+            subPath: scratch_loop
         ports:
         - containerPort: 9618
           protocol: TCP
