@@ -9,27 +9,26 @@ services:
   kube-api:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,CPUManager=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
      admission-control: "ExtendedResourceToleration"
     service_cluster_ip_range: 10.233.0.0/18
     pod_security_policy: false
   kube-controller:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,CPUManager=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
     cluster_cidr: 10.233.64.0/18
     service_cluster_ip_range: 10.233.0.0/18
   scheduler:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,CPUManager=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
   kubelet:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,CPUManager=true"
-     cpu-manager-policy: static
-     kube-reserved: "cpu=250m,memory=1Gi"
-     system-reserved: "cpu=250m,memory=5Gi"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
+     kube-reserved: "cpu=250m,memory=512Mi"
+     system-reserved: "cpu=250m,memory=1Gi"
     cluster_domain: cluster.local
     infra_container_image: gcr.io/google_containers/pause-amd64:3.0
     cluster_dns_server: 10.233.0.3
@@ -37,7 +36,7 @@ services:
   kubeproxy:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,CPUManager=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
 
 network:
   plugin: canal
