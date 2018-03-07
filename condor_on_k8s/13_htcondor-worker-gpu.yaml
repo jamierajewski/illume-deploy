@@ -55,12 +55,12 @@ spec:
           requests:
             memory: "56Gi"    # 8GiB of memory per core
             cpu: "7"          # 7 CPU cores
-            ephemeral-storage: "30Gi" # this is everything except for scratch
+            # ephemeral-storage: "30Gi" # this is everything except for scratch
             nvidia.com/gpu: 4 # request 4 GPUs (one CPU core per GPU)
           limits:
             memory: "56Gi"    # 8GiB of memory per core
             cpu: "7"          # 7 CPU cores
-            ephemeral-storage: "30Gi" # this is everything except for scratch
+            # ephemeral-storage: "30Gi" # this is everything except for scratch
             nvidia.com/gpu: 4 # request 4 GPUs (one CPU core per GPU)
         # we need this to make Singularity work: (more privileges)
         securityContext:
@@ -116,5 +116,5 @@ spec:
         hostPath:
           path: "/cvmfs"
       - name: scratch
-        emptyDir:
-          sizeLimit: 700Gi
+        emptyDir: {}
+        #  sizeLimit: 700Gi

@@ -36,6 +36,15 @@ spec:
       containers:
       - name: scratch-loopback
         image: ubuntu:16.04
+        resources:
+          requests:
+            memory: "10Mi"
+            cpu: "10m"
+            # ephemeral-storage: "10Mi"
+          limits:
+            memory: "10Mi"
+            cpu: "10m"
+            # ephemeral-storage: "10Mi"
         command: ["/bin/sh"]
         args: ["-c", "mount -o loop /scratch/scratch.img /scratch/scratch_loop && /bin/sleep infinity"]
         lifecycle:
@@ -55,11 +64,11 @@ spec:
           requests:
             memory: "8Gi"     # 8GiB of memory per core
             cpu: "1000m"      # 1 CPU core
-            ephemeral-storage: "30Gi" # this is everything except for scratch
+            # ephemeral-storage: "30Gi" # this is everything except for scratch
           limits:
             memory: "8Gi"     # 8GiB of memory per core
             cpu: "1000m"      # 1 CPU core
-            ephemeral-storage: "30Gi" # this is everything except for scratch
+            # ephemeral-storage: "30Gi" # this is everything except for scratch
         # we need this to make Singularity work: (more privileges)
         securityContext:
           capabilities:
@@ -114,5 +123,5 @@ spec:
         hostPath:
           path: "/cvmfs"
       - name: scratch
-        emptyDir:
-          sizeLimit: 100Gi
+        emptyDir: {}
+          #sizeLimit: 100Gi

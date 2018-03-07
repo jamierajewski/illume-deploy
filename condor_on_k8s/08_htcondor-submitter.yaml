@@ -83,17 +83,16 @@ spec:
           requests:
             memory: "8.0Gi"
             cpu: "1000m"
-            ephemeral-storage: "30Gi" # this is everything except for scratch
+            # ephemeral-storage: "30Gi" # this is everything except for scratch
           limits:
             memory: "8.0Gi"
             cpu: "1000m"
-            ephemeral-storage: "30Gi" # this is everything except for scratch
+            # ephemeral-storage: "30Gi" # this is everything except for scratch
         # we need this to make Singularity work: (more privileges)
         securityContext:
           capabilities:
             add:
               - SYS_ADMIN
-
         env:
         - name: CONDOR_HOST
           value: "illume-coll"
@@ -146,5 +145,5 @@ spec:
         hostPath:
           path: "/cvmfs"
       - name: scratch
-        emptyDir:
-          sizeLimit: 100Gi
+        emptyDir: {}
+        #  sizeLimit: 100Gi

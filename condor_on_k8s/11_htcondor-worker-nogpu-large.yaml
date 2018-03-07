@@ -55,11 +55,11 @@ spec:
           requests:
             memory: "48Gi"    # 8GiB of memory per core
             cpu: "6000m"      # 6 CPU cores
-            ephemeral-storage: "30Gi" # this is everything except for scratch
+            # ephemeral-storage: "30Gi" # this is everything except for scratch
           limits:
             memory: "48Gi"    # 8GiB of memory per core
             cpu: "6000m"      # 6 CPU cores
-            ephemeral-storage: "30Gi" # this is everything except for scratch
+            # ephemeral-storage: "30Gi" # this is everything except for scratch
         # we need this to make Singularity work: (more privileges)
         securityContext:
           capabilities:
@@ -114,5 +114,5 @@ spec:
         hostPath:
           path: "/cvmfs"
       - name: scratch
-        emptyDir:
-          sizeLimit: 600Gi
+        emptyDir: {}
+        #  sizeLimit: 600Gi

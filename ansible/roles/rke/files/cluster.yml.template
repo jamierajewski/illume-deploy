@@ -9,24 +9,28 @@ services:
   kube-api:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
+     # TODO: add "LocalStorageCapacityIsolation=true" later - needs more testing
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true"
      admission-control: "ExtendedResourceToleration"
     service_cluster_ip_range: 10.233.0.0/18
     pod_security_policy: false
   kube-controller:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
+     # TODO: add "LocalStorageCapacityIsolation=true" later - needs more testing
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true"
     cluster_cidr: 10.233.64.0/18
     service_cluster_ip_range: 10.233.0.0/18
   scheduler:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
+     # TODO: add "LocalStorageCapacityIsolation=true" later - needs more testing
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true"
   kubelet:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
+     # TODO: add "LocalStorageCapacityIsolation=true" later - needs more testing
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true"
      kube-reserved: "cpu=250m,memory=512Mi"
      system-reserved: "cpu=250m,memory=1Gi"
     cluster_domain: cluster.local
@@ -36,7 +40,8 @@ services:
   kubeproxy:
     image: rancher/k8s:v1.9.3-rancher1-1
     extra_args:
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,LocalStorageCapacityIsolation=true"
+     # TODO: add "LocalStorageCapacityIsolation=true" later - needs more testing
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true"
 
 network:
   plugin: canal
