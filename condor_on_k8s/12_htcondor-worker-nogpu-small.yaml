@@ -29,7 +29,7 @@ spec:
         image: ubuntu:16.04
         command: ["/bin/sh"]
         # TODO: get the size (count) from the pod spec via env
-        args: ["-c", "/usr/bin/truncate -s 100G /scratch/scratch.img && mkfs.ext4 /scratch/scratch.img && mkdir -p /scratch/scratch_loop"]
+        args: ["-c", "/usr/bin/fallocate -l 100G /scratch/scratch.img && mkfs.ext4 /scratch/scratch.img && mkdir -p /scratch/scratch_loop"]
         volumeMounts:
           - name: scratch
             mountPath: /scratch
