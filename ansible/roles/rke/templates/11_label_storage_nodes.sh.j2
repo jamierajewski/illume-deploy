@@ -1,6 +1,0 @@
-#!/bin/sh
-
-# label storage nodes to use for rook/ceph storage
-{% for node in rke_storage_nodes %}
-kubectl label nodes {{ node }} role=storage-node
-{% endfor %}

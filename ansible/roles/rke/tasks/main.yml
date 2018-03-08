@@ -59,23 +59,13 @@
     mode: "{{ item.mode }}"
   with_items:
     - { name: '00_rke_up.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '02_nvidia-device-plugin.yml', mode: 'u=rw,g=r,o=r' }
-    - { name: '04_label_kube-system_namespace.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '05_illume-namespace.yml', mode: 'u=rw,g=r,o=r' }
-    - { name: '06_allow-namespace-illume.yml', mode: 'u=rw,g=r,o=r' }
-    - { name: '07_allow-dns-access.yml', mode: 'u=rw,g=r,o=r' }
-    - { name: '08_allow-public-internet.yml', mode: 'u=rw,g=r,o=r' }
-    - { name: '09_rook-operator.yaml', mode: 'u=rw,g=r,o=r' }
-    - { name: '10_wait_for_operator.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '12_rook-cluster.yml', mode: 'u=rw,g=r,o=r' }
-    - { name: '13_wait_for_rook-cluster.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '14_storage_pool_and_class.yml', mode: 'u=rw,g=r,o=r' }
-    - { name: '15_rook-tools.yml', mode: 'u=rw,g=r,o=r' }
-    - { name: '16_example-ubuntu-host.yml', mode: 'u=rw,g=r,o=r' }
-    - { name: '17_kubernetes-dashboard.yaml', mode: 'u=rw,g=r,o=r' }
-    - { name: '18_kubernetes-dashboard-sample-user.yaml', mode: 'u=rw,g=r,o=r' }
-    - { name: '19_get-dashboard-sample-user-bearer-token.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '20_access_dashboard.txt', mode: 'u=rw,g=r,o=r' }
+    - { name: '03_nvidia-device-plugin.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '04_test_gpu_jobs.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '05_label_kube-system_namespace.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '06_kubernetes-dashboard.yaml', mode: 'u=rw,g=r,o=r' }
+    - { name: '07_kubernetes-dashboard-sample-user.yaml', mode: 'u=rw,g=r,o=r' }
+    - { name: '08_get-dashboard-sample-user-bearer-token.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '09_access_dashboard.txt', mode: 'u=rw,g=r,o=r' }
 
 - name: install kubernetes setup file templates
   template:
@@ -86,7 +76,6 @@
     mode: "{{ item.mode }}"
   with_items:
     - { name: '01_taint_control_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '03_taint_gpu_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '11_label_storage_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '02_taint_gpu_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
 
 - meta: flush_handlers
