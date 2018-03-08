@@ -33,7 +33,7 @@ services:
      # TODO: add "LocalStorageCapacityIsolation=true" later - needs more testing
      feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,PodPriority=true"
      kube-reserved: "cpu=200m,memory=512Mi"
-     system-reserved: "cpu=200m,memory=512Gi"
+     system-reserved: "cpu=200m,memory=512Mi"
     cluster_domain: cluster.local
     infra_container_image: gcr.io/google_containers/pause-amd64:3.0
     cluster_dns_server: 10.233.0.3
