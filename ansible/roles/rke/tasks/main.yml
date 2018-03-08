@@ -59,13 +59,14 @@
     mode: "{{ item.mode }}"
   with_items:
     - { name: '00_rke_up.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '03_nvidia-device-plugin.yml', mode: 'u=rw,g=r,o=r' }
-    - { name: '04_test_gpu_jobs.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '05_label_kube-system_namespace.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '06_kubernetes-dashboard.yaml', mode: 'u=rw,g=r,o=r' }
-    - { name: '07_kubernetes-dashboard-sample-user.yaml', mode: 'u=rw,g=r,o=r' }
-    - { name: '08_get-dashboard-sample-user-bearer-token.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '09_access_dashboard.txt', mode: 'u=rw,g=r,o=r' }
+    - { name: '01_priorityclasses.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '04_nvidia-device-plugin.yml', mode: 'u=rw,g=r,o=r' }
+    - { name: '05_test_gpu_jobs.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '06_label_kube-system_namespace.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '07_kubernetes-dashboard.yaml', mode: 'u=rw,g=r,o=r' }
+    - { name: '08_kubernetes-dashboard-sample-user.yaml', mode: 'u=rw,g=r,o=r' }
+    - { name: '09_get-dashboard-sample-user-bearer-token.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '10_access_dashboard.txt', mode: 'u=rw,g=r,o=r' }
 
 - name: install kubernetes setup file templates
   template:
@@ -75,7 +76,7 @@
     group: "{{ ansible_user }}"
     mode: "{{ item.mode }}"
   with_items:
-    - { name: '01_taint_control_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
-    - { name: '02_taint_gpu_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '02_taint_control_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
+    - { name: '03_taint_gpu_nodes.sh', mode: 'u=rwx,g=rx,o=rx' }
 
 - meta: flush_handlers
