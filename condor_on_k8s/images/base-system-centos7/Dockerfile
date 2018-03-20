@@ -43,7 +43,8 @@ RUN yum -y groups mark convert && \
            libXt mesa-libGL-devel numpy octave octave-devel openssl098e p7zip \
            p7zip-plugins python-astropy python-devel R-devel redhat-lsb-core \
            rsync scipy subversion tcl-devel tcsh time tk-devel wget which \
-           lzo squashfs-tools mc python-requests tmux mosh strace && \
+           lzo squashfs-tools mc python-requests tmux screen mosh strace emacs \
+           postgresql mariadb python2-pg8000 PyGreSQL valgrind cronie && \
     yum -y clean all && rm -rf /var/cache/yum
 
 # Install Singularity (in directory-mode only, no loopback mounted images for now,

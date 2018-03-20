@@ -4,3 +4,6 @@ cvmfs_mounts:
   - oasis.opensciencegrid.org
   - singularity.opensciencegrid.org
   - config-osg.opensciencegrid.org
+  - snoplus.egi.eu
+  - ganga.cern.ch
+  - grid.cern.ch

@@ -46,7 +46,7 @@
     state: directory
     owner: cvmfs
     group: cvmfs
-    mode: 0755
+    #mode: 0755
   become: true
   with_items: "{{ cvmfs_mounts }}"
 
