@@ -5,7 +5,7 @@ resource "openstack_compute_instance_v2" "illume-ingress" {
     name = "${format("illume-ingress-%02d", count.index+1)}"
 
     image_id      = "${openstack_images_image_v2.illume-ubuntu.id}"
-    flavor_name     = "${var.flavor-ingress}"
+    flavor_name     = "c4-8GB-90"
     key_pair        = "${openstack_compute_keypair_v2.illume.name}"
     security_groups = [
       "${openstack_compute_secgroup_v2.illume-ingress.name}",

@@ -1,11 +1,11 @@
-resource "openstack_compute_instance_v2" "illume-worker-nogpu" {
+resource "openstack_compute_instance_v2" "illume-worker-nogpu-4core" {
     depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion"]
 
-    count = 8
-    name = "${format("illume-worker-nogpu-%02d", count.index+1)}"
+    count = 2
+    name = "${format("illume-worker-nogpu-4core-%02d", count.index+1)}"
 
     image_id        = "${openstack_images_image_v2.illume-ubuntu.id}"
-    flavor_name     = "${var.flavor-worker-nogpu}"
+    flavor_name     = "c4-32GB-360"
     key_pair        = "${openstack_compute_keypair_v2.illume.name}"
     security_groups = [
       "${openstack_compute_secgroup_v2.illume-internal.name}"
@@ -20,7 +20,7 @@ resource "openstack_compute_instance_v2" "illume-worker-nogpu" {
        uuid                  = "${openstack_images_image_v2.illume-ubuntu.id}"
     }
 
-    # assign all ephemeral storage for this flavor (720GB),
+    # assign all ephemeral storage for this flavor (360GB),
     # then split it up into partitions.
     # (OpenStack on cirrus did not seem to allow me to create more
     # than 2 ephemeral disks, so use partitions on a single disk instead.)
@@ -29,13 +29,13 @@ resource "openstack_compute_instance_v2" "illume-worker-nogpu" {
        delete_on_termination = true
        destination_type      = "local"
        source_type           = "blank"
-       volume_size           = 720
+       volume_size           = 360
      }
 
     # split ephemeral storage into 3 parts:
-    # 202GB - ephemeral0.1 (28%)
-    # 454GB - ephemeral0.2 (63%)
-    #  65GB - ephemeral0.3 ( 9%)
+    #  122GB - ephemeral0.1 (34%)
+    #  209GB - ephemeral0.2 (58%)
+    #   29GB - ephemeral0.3 ( 8%)
     # mount ephemeral storage #0.1 to /var/lib/docker
     # mount ephemeral storage #0.2 to /var/lib/kubelet
     # mount ephemeral storage #0.3 to /var/lib/cvmfs
@@ -45,9 +45,9 @@ disk_setup:
   ephemeral0:
     table_type: 'gpt'
     layout:
-      - 28
-      - 63
-      - 9
+      - 34
+      - 58
+      - 8
     overwrite: true
 
 fs_setup:

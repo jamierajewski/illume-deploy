@@ -31,7 +31,7 @@ mounts:
   - [ ephemeral0, /var/spool/squid ]
 EOF
 
-    flavor_name     = "${var.flavor-proxy}"
+    flavor_name     = "c4-16GB-180"
     key_pair        = "${openstack_compute_keypair_v2.illume.name}"
     security_groups = [
       "${openstack_compute_secgroup_v2.illume-internal.name}"

@@ -20,30 +20,6 @@ variable "volume-size-bastion" {
   default = "30"
 }
 
-variable "flavor-bastion" {
-  default = "c2-4GB-45"
-}
-
-variable "flavor-proxy" {
-  default = "c4-16GB-180"
-}
-
-variable "flavor-control" {
-  default = "c4-8GB-90"
-}
-
-variable "flavor-ingress" {
-  default = "c4-8GB-90"
-}
-
-variable "flavor-worker-1080ti" {
-  default = "c8-64gb-2048-4.1080ti"
-}
-
-variable "flavor-worker-nogpu" {
-  default = "c8-64GB-720"
-}
-
 variable "ssh_key_file" {
   default = "~/.ssh/illume_key"
 }

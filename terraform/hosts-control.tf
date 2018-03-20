@@ -30,7 +30,7 @@ mounts:
   - [ ephemeral0, /scratch ]
 EOF
 
-    flavor_name     = "${var.flavor-control}"
+    flavor_name     = "c4-8GB-90"
     key_pair        = "${openstack_compute_keypair_v2.illume.name}"
     security_groups = [
       "${openstack_compute_secgroup_v2.illume-internal.name}"

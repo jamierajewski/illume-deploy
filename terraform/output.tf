@@ -19,7 +19,7 @@ output "illume-worker-1080ti-addresses" {
 }
 
 output "illume-worker-nogpu-addresses" {
-  value = "${openstack_compute_instance_v2.illume-worker-nogpu.*.network.0.fixed_ip_v4}"
+  value = "${ concat(openstack_compute_instance_v2.illume-worker-nogpu.*.network.0.fixed_ip_v4, openstack_compute_instance_v2.illume-worker-nogpu-4core.*.network.0.fixed_ip_v4, openstack_compute_instance_v2.illume-worker-nogpu-10core.*.network.0.fixed_ip_v4) }"
 }
 
 output "illume-ingress-addresses" {

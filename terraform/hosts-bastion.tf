@@ -31,7 +31,7 @@ mounts:
   - [ ephemeral0, /var/lib/docker ]
 EOF
 
-    flavor_name     = "${var.flavor-bastion}"
+    flavor_name     = "c2-4GB-45"
     key_pair        = "${openstack_compute_keypair_v2.illume.name}"
     security_groups = [
       "${openstack_compute_secgroup_v2.illume-bastion.name}",

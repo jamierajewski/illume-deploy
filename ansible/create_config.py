@@ -144,7 +144,7 @@ def main():
     all_worker_addresses_nogpu = []
     for worker_kind in worker_kinds:
         new_addr = data['illume-worker-{}-addresses'.format(worker_kind)]['value']
-        if worker_kind=="nogpu":
+        if worker_kind[:5]=="nogpu":
             all_worker_addresses_nogpu += new_addr
         else:
             all_worker_addresses_gpu += new_addr
