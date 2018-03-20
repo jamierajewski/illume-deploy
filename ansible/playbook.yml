@@ -1,23 +1,27 @@
 ---
 - hosts: all
+  gather_facts: false
   roles:
     - role: common
       tags: common
 
 # set up the proxies
 - hosts: proxy
+  gather_facts: false
   roles:
     - role: squid
       tags: squid
 
 # docker on everything but the proxy hosts
 - hosts: all:!proxy
+  gather_facts: false
   roles:
     - role: docker
       tags: docker
 
 # workers need cvmfs and zerotier
 - hosts: worker-gpu:worker-nogpu:ingress
+  gather_facts: false
   roles:
     - role: cvmfs
       tags: cvmfs
@@ -26,6 +30,7 @@
 
 # GPU workers need cuda and nvidia-docker
 - hosts: worker-gpu
+  gather_facts: false
   roles:
     - role: cuda
       tags: cuda
@@ -34,6 +39,7 @@
 
 # and the bastion host needs rke so we can deploy kubernetes
 - hosts: bastion
+  gather_facts: false
   roles:
     - role: rke
       tags: rke
