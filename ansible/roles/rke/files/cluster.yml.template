@@ -7,31 +7,32 @@ services:
     image: quay.io/coreos/etcd:latest
     extra_args: {}
   kube-api:
-    image: rancher/k8s:v1.9.3-rancher1-1
+    image: rancher/k8s:v1.9.5-rancher1-1
     extra_args:
-     # TODO: add "LocalStorageCapacityIsolation=true" later - needs more testing
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,PodPriority=true"
+     # remove "LocalStorageCapacityIsolation=true" for k8s 1.10 (it is on by default now)
+     # note: PVCProtection -> StorageProtection for k8s 1.10
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,VolumeScheduling=true,PVCProtection=true,MountPropagation=true,PodPriority=true,LocalStorageCapacityIsolation=true"
      admission-control: "ExtendedResourceToleration,Priority"
      runtime-config: "scheduling.k8s.io/v1alpha1=true"
     service_cluster_ip_range: 10.233.0.0/18
     pod_security_policy: false
   kube-controller:
-    image: rancher/k8s:v1.9.3-rancher1-1
+    image: rancher/k8s:v1.9.5-rancher1-1
     extra_args:
      # TODO: add "LocalStorageCapacityIsolation=true" later - needs more testing
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,PodPriority=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,VolumeScheduling=true,PVCProtection=true,MountPropagation=true,PodPriority=true,LocalStorageCapacityIsolation=true"
     cluster_cidr: 10.233.64.0/18
     service_cluster_ip_range: 10.233.0.0/18
   scheduler:
-    image: rancher/k8s:v1.9.3-rancher1-1
+    image: rancher/k8s:v1.9.5-rancher1-1
     extra_args:
      # TODO: add "LocalStorageCapacityIsolation=true" later - needs more testing
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,PodPriority=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,VolumeScheduling=true,PVCProtection=true,MountPropagation=true,PodPriority=true,LocalStorageCapacityIsolation=true"
   kubelet:
-    image: rancher/k8s:v1.9.3-rancher1-1
+    image: rancher/k8s:v1.9.5-rancher1-1
     extra_args:
      # TODO: add "LocalStorageCapacityIsolation=true" later - needs more testing
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,PodPriority=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,VolumeScheduling=true,PVCProtection=true,MountPropagation=true,PodPriority=true,LocalStorageCapacityIsolation=true"
      kube-reserved: "cpu=200m,memory=512Mi"
      system-reserved: "cpu=200m,memory=512Mi"
     cluster_domain: cluster.local
@@ -39,10 +40,10 @@ services:
     cluster_dns_server: 10.233.0.3
     fail_swap_on: true
   kubeproxy:
-    image: rancher/k8s:v1.9.3-rancher1-1
+    image: rancher/k8s:v1.9.5-rancher1-1
     extra_args:
      # TODO: add "LocalStorageCapacityIsolation=true" later - needs more testing
-     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,PVCProtection=true,MountPropagation=true,PodPriority=true"
+     feature-gates: "DevicePlugins=true,PersistentLocalVolumes=true,VolumeScheduling=true,PVCProtection=true,MountPropagation=true,PodPriority=true,LocalStorageCapacityIsolation=true"
 
 network:
   plugin: canal
