@@ -12,4 +12,6 @@ cp /etc/ssh-host-keys/ssh_host_* /etc/ssh/
 chmod 600 /etc/ssh/ssh_host_*
 chmod 644 /etc/ssh/ssh_host_*.pub
 
+mkdir -p /var/log/crond
+
 exec /usr/bin/supervisord -c /etc/supervisord.conf
