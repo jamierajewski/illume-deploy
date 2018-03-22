@@ -1,11 +1,14 @@
 resource "openstack_compute_instance_v2" "illume-worker-nogpu-10core" {
-    depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion"]
+    depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion",
+                  # provision all GPU instances first to make sure we do not
+                  # use up their slots for anything else
+                  "openstack_compute_instance_v2.illume-worker-1080ti"]
 
-    count = 1
+    count = 0
     name = "${format("illume-worker-nogpu-10core-%02d", count.index+1)}"
 
-    image_id        = "${openstack_images_image_v2.illume-ubuntu.id}"
     flavor_name     = "c10-128GB-1440"
+    image_id        = "${openstack_images_image_v2.illume-ubuntu.id}"
     key_pair        = "${openstack_compute_keypair_v2.illume.name}"
     security_groups = [
       "${openstack_compute_secgroup_v2.illume-internal.name}"

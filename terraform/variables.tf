@@ -12,14 +12,6 @@ variable "image-name" {
   default = "illume-ubuntu-xenial"
 }
 
-variable "volume-size-control" {
-  default = "120"
-}
-
-variable "volume-size-bastion" {
-  default = "30"
-}
-
 variable "ssh_key_file" {
   default = "~/.ssh/illume_key"
 }

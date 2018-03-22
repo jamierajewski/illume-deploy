@@ -1,11 +1,14 @@
-resource "openstack_compute_instance_v2" "illume-worker-nogpu" {
-    depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion"]
+resource "openstack_compute_instance_v2" "illume-worker-nogpu-8core" {
+    depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion",
+                  # provision all GPU instances first to make sure we do not
+                  # use up their slots for anything else
+                  "openstack_compute_instance_v2.illume-worker-1080ti"]
 
-    count = 9
-    name = "${format("illume-worker-nogpu-%02d", count.index+1)}"
+    count = 0
+    name = "${format("illume-worker-nogpu-8core-%02d", count.index+1)}"
 
-    image_id        = "${openstack_images_image_v2.illume-ubuntu.id}"
     flavor_name     = "c8-64GB-720"
+    image_id        = "${openstack_images_image_v2.illume-ubuntu.id}"
     key_pair        = "${openstack_compute_keypair_v2.illume.name}"
     security_groups = [
       "${openstack_compute_secgroup_v2.illume-internal.name}"

@@ -1,13 +1,10 @@
-resource "openstack_compute_instance_v2" "illume-worker-nogpu-4core" {
-    depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion",
-                  # provision all GPU instances first to make sure we do not
-                  # use up their slots for anything else
-                  "openstack_compute_instance_v2.illume-worker-1080ti"]
+resource "openstack_compute_instance_v2" "illume-worker-titanxp" {
+    depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion"]
 
-    count = 0
-    name = "${format("illume-worker-nogpu-4core-%02d", count.index+1)}"
+    count = 2
+    name = "${format("illume-worker-titanxp-%02d", count.index+1)}"
 
-    flavor_name     = "c4-32GB-360"
+    flavor_name     = "c16-116gb-3400-4.titanxp"
     image_id        = "${openstack_images_image_v2.illume-ubuntu.id}"
     key_pair        = "${openstack_compute_keypair_v2.illume.name}"
     security_groups = [
@@ -23,7 +20,7 @@ resource "openstack_compute_instance_v2" "illume-worker-nogpu-4core" {
        uuid                  = "${openstack_images_image_v2.illume-ubuntu.id}"
     }
 
-    # assign all ephemeral storage for this flavor (360GB),
+    # assign all ephemeral storage for this flavor (3400GB),
     # then split it up into partitions.
     # (OpenStack on cirrus did not seem to allow me to create more
     # than 2 ephemeral disks, so use partitions on a single disk instead.)
@@ -32,13 +29,13 @@ resource "openstack_compute_instance_v2" "illume-worker-nogpu-4core" {
        delete_on_termination = true
        destination_type      = "local"
        source_type           = "blank"
-       volume_size           = 360
+       volume_size           = 3400
      }
 
     # split ephemeral storage into 3 parts:
-    #  122GB - ephemeral0.1 (34%)
-    #  209GB - ephemeral0.2 (58%)
-    #   29GB - ephemeral0.3 ( 8%)
+    #  204GB - ephemeral0.1 ( 6%)
+    # 3128GB - ephemeral0.2 (92%)
+    #   68GB - ephemeral0.3 ( 2%)
     # mount ephemeral storage #0.1 to /var/lib/docker
     # mount ephemeral storage #0.2 to /var/lib/kubelet
     # mount ephemeral storage #0.3 to /var/lib/cvmfs
@@ -48,9 +45,9 @@ disk_setup:
   ephemeral0:
     table_type: 'gpt'
     layout:
-      - 34
-      - 58
-      - 8
+      - 6
+      - 92
+      - 2
     overwrite: true
 
 fs_setup:

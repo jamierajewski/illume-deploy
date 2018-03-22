@@ -18,8 +18,24 @@ output "illume-worker-1080ti-addresses" {
   value = "${openstack_compute_instance_v2.illume-worker-1080ti.*.network.0.fixed_ip_v4}"
 }
 
-output "illume-worker-nogpu-addresses" {
-  value = "${ concat(openstack_compute_instance_v2.illume-worker-nogpu.*.network.0.fixed_ip_v4, openstack_compute_instance_v2.illume-worker-nogpu-4core.*.network.0.fixed_ip_v4, openstack_compute_instance_v2.illume-worker-nogpu-10core.*.network.0.fixed_ip_v4) }"
+output "illume-worker-titanx-addresses" {
+  value = "${openstack_compute_instance_v2.illume-worker-titanx.*.network.0.fixed_ip_v4}"
+}
+
+output "illume-worker-titanxp-addresses" {
+  value = "${openstack_compute_instance_v2.illume-worker-titanxp.*.network.0.fixed_ip_v4}"
+}
+
+output "illume-worker-nogpu-10core-addresses" {
+  value = "${openstack_compute_instance_v2.illume-worker-nogpu-10core.*.network.0.fixed_ip_v4}"
+}
+
+output "illume-worker-nogpu-8core-addresses" {
+  value = "${openstack_compute_instance_v2.illume-worker-nogpu-8core.*.network.0.fixed_ip_v4}"
+}
+
+output "illume-worker-nogpu-4core-addresses" {
+  value = "${openstack_compute_instance_v2.illume-worker-nogpu-4core.*.network.0.fixed_ip_v4}"
 }
 
 output "illume-ingress-addresses" {

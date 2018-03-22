@@ -1,8 +1,17 @@
 resource "openstack_compute_instance_v2" "illume-proxy" {
-    depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion"]
+    depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion",
+                  # provision all GPU instances first to make sure we do not
+                  # use up their slots for anything else
+                  "openstack_compute_instance_v2.illume-worker-1080ti"]
 
     count = 2
     name = "${format("illume-proxy-%02d", count.index+1)}"
+
+    flavor_name     = "c4-16GB-180"
+    key_pair        = "${openstack_compute_keypair_v2.illume.name}"
+    security_groups = [
+      "${openstack_compute_secgroup_v2.illume-internal.name}"
+    ]
 
     image_id      = "${openstack_images_image_v2.illume-ubuntu.id}"
     # boot device (ephemeral)
@@ -23,19 +32,12 @@ resource "openstack_compute_instance_v2" "illume-proxy" {
        volume_size           = 180
      }
 
-    # mount ephemeral storage #0 to /var/spool/squid [do not use it here, use 100%
-    # volume storage]
+    # mount ephemeral storage #0 to /var/spool/squid
     user_data       = <<EOF
 #cloud-config
 mounts:
   - [ ephemeral0, /var/spool/squid ]
 EOF
-
-    flavor_name     = "c4-16GB-180"
-    key_pair        = "${openstack_compute_keypair_v2.illume.name}"
-    security_groups = [
-      "${openstack_compute_secgroup_v2.illume-internal.name}"
-    ]
 
     network {
       name = "${var.network}"

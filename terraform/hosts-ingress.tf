@@ -1,11 +1,14 @@
 resource "openstack_compute_instance_v2" "illume-ingress" {
-    depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion"]
+    depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion",
+                  # provision all GPU instances first to make sure we do not
+                  # use up their slots for anything else
+                  "openstack_compute_instance_v2.illume-worker-1080ti"]
 
     count = 1
     name = "${format("illume-ingress-%02d", count.index+1)}"
 
-    image_id      = "${openstack_images_image_v2.illume-ubuntu.id}"
-    flavor_name     = "c4-8GB-90"
+    flavor_name     = "c10-128GB-1440"
+    image_id        = "${openstack_images_image_v2.illume-ubuntu.id}"
     key_pair        = "${openstack_compute_keypair_v2.illume.name}"
     security_groups = [
       "${openstack_compute_secgroup_v2.illume-ingress.name}",
@@ -21,7 +24,7 @@ resource "openstack_compute_instance_v2" "illume-ingress" {
        uuid                  = "${openstack_images_image_v2.illume-ubuntu.id}"
     }
 
-    # assign all ephemeral storage for this flavor (90GB),
+    # assign all ephemeral storage for this flavor (1440GB),
     # then split it up into partitions.
     # (OpenStack on cirrus did not seem to allow me to create more
     # than 2 ephemeral disks, so use partitions on a single disk instead.)
@@ -30,13 +33,13 @@ resource "openstack_compute_instance_v2" "illume-ingress" {
        delete_on_termination = true
        destination_type      = "local"
        source_type           = "blank"
-       volume_size           = 90
+       volume_size           = 1440
      }
 
     # split ephemeral storage into 3 parts:
-    # 36GB - ephemeral0.1 (40%)
-    # 36GB - ephemeral0.2 (40%)
-    # 18GB - ephemeral0.2 (20%)
+    #  202GB - ephemeral0.1 (14%)
+    # 1166GB - ephemeral0.2 (81%)
+    #   72GB - ephemeral0.3 ( 5%)
     # mount ephemeral storage #0.1 to /var/lib/docker
     # mount ephemeral storage #0.2 to /var/lib/kubelet
     # mount ephemeral storage #0.3 to /var/lib/cvmfs
@@ -46,9 +49,9 @@ disk_setup:
   ephemeral0:
     table_type: 'gpt'
     layout:
-      - 40
-      - 40
-      - 20
+      - 14
+      - 81
+      - 5
     overwrite: true
 
 fs_setup:

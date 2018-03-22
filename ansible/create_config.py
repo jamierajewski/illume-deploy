@@ -10,7 +10,7 @@ import json
 import subprocess
 from string import Template
 
-worker_kinds = ['nogpu', '1080ti']
+worker_kinds = ['nogpu-10core', 'nogpu-8core', 'nogpu-4core', '1080ti', 'titanx', 'titanxp']
 
 def create_ssh_config(data, outfile, special_config_name=None):
     subnet = data['subnet']['value']
@@ -182,7 +182,7 @@ def main():
     for worker_kind in worker_kinds:
         for idx, address in enumerate(data['illume-worker-{}-addresses'.format(worker_kind)]['value']):
             worker_name = "illume-worker-{}-{:02d}".format(worker_kind, idx+1)
-            if worker_kind != "nogpu":
+            if worker_kind[:5] != "nogpu":
                 rke_gpu_nodes += "  - " + worker_name + "\n"
             rke_storage_nodes += "  - " + worker_name + "\n"
 
