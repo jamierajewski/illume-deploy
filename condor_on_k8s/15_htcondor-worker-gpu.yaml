@@ -6,7 +6,7 @@ metadata:
   name: illume-work-gpu
   namespace: illume
 spec:
-  replicas: 1
+  replicas: 11
   # we can handle parallel deployment
   podManagementPolicy: Parallel
   selector:
@@ -53,13 +53,13 @@ spec:
         image: illumecluster/htcondor-worker:latest
         resources:
           requests:
-            memory: "56Gi"    # 8GiB of memory per core
-            cpu: "7"          # 7 CPU cores
+            memory: "112Gi"   # 7GiB of memory per core
+            cpu: "14"         # 15 CPU cores
             # ephemeral-storage: "30Gi" # this is everything except for scratch
             nvidia.com/gpu: 4 # request 4 GPUs (one CPU core per GPU)
           limits:
-            memory: "56Gi"    # 8GiB of memory per core
-            cpu: "7"          # 7 CPU cores
+            memory: "112Gi"   # 7GiB of memory per core
+            cpu: "15500m"     # 15.5 CPU cores (don't use quite *all* of the available CPU)
             # ephemeral-storage: "30Gi" # this is everything except for scratch
             nvidia.com/gpu: 4 # request 4 GPUs (one CPU core per GPU)
         # we need this to make Singularity work: (more privileges)
