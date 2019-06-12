@@ -16,3 +16,8 @@ UPDATE_COLLECTOR_WITH_TCP = TRUE
 
 UID_DOMAIN = illume.svc.cluster.local
 TRUST_UID_DOMAIN = True
+
+ROTATE_HISTORY_DAILY = True
+MAX_HISTORY_ROTATIONS = 5
+HISTORY = /var/log/condor/history
+
