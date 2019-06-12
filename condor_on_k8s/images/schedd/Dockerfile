@@ -11,8 +11,7 @@ RUN chmod +x /sbin/tini && \
     cd /etc/yum.repos.d && wget http://research.cs.wisc.edu/htcondor/yum/repo.d/htcondor-stable-rhel7.repo && \
     wget http://research.cs.wisc.edu/htcondor/yum/RPM-GPG-KEY-HTCondor && rpm --import RPM-GPG-KEY-HTCondor && \
     yum -y install condor && \
-    yum -y clean all && rm -rf /var/cache/yum && \
-    mkdir -p /var/log/condor/history
+    yum -y clean all && rm -rf /var/cache/yum
 
 COPY sshd_config /etc/ssh/sshd_config
 COPY condor_config.local /etc/condor/
