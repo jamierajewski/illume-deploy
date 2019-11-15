@@ -5,7 +5,7 @@ resource "openstack_images_image_v2" "illume-ubuntu" {
   disk_format      = "qcow2"
   min_disk_gb      = 1
 
-  properties {
+  properties = {
     img_hide_hypervisor_id = "true"
   }
 }

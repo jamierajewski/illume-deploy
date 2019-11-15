@@ -133,5 +133,5 @@ resource "openstack_compute_floatingip_v2" "illume-ingress" {
 
 resource "openstack_compute_floatingip_associate_v2" "illume-ingress" {
   floating_ip = "${openstack_compute_floatingip_v2.illume-ingress.address}"
-  instance_id = "${openstack_compute_instance_v2.illume-ingress.id}"
+  instance_id = "${openstack_compute_instance_v2.illume-ingress.0.id}"
 }

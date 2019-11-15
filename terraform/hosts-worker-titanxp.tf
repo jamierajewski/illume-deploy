@@ -1,7 +1,7 @@
 resource "openstack_compute_instance_v2" "illume-worker-titanxp" {
     depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion"]
 
-    count = 2
+    count = 12
     name = "${format("illume-worker-titanxp-%02d", count.index+1)}"
 
     flavor_name     = "c16-116gb-3400-4.titanxp"
@@ -10,7 +10,7 @@ resource "openstack_compute_instance_v2" "illume-worker-titanxp" {
     security_groups = [
       "${openstack_compute_secgroup_v2.illume-internal.name}"
     ]
-
+     
     # boot device (ephemeral)
     block_device {
        boot_index            = 0
@@ -77,6 +77,7 @@ EOF
         user     = "${var.ssh_user_name}"
         private_key = "${file(var.ssh_key_file)}"
         port     = 22
+        timeout  = "20m"
 
         bastion_host = "${openstack_compute_floatingip_v2.illume-bastion.address}"
         bastion_user = "${var.ssh_user_name}"
@@ -89,8 +90,12 @@ EOF
         "sudo DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade",
         "sudo DEBIAN_FRONTEND=noninteractive apt-get -y install python",
         "sudo sed -i 's/^[# ]*Port .*/Port 2222/' /etc/ssh/sshd_config",
-        "sudo shutdown -r now",
+        "sudo shutdown -r +1",
       ]
+    }
+
+    provisioner "local-exec" {
+        command = "sleep 60"
     }
 
     connection {
@@ -98,6 +103,7 @@ EOF
       user     = "${var.ssh_user_name}"
       private_key = "${file(var.ssh_key_file)}"
       port     = 2222
+      timeout  = "20m"
 
       bastion_host = "${openstack_compute_floatingip_v2.illume-bastion.address}"
       bastion_user = "${var.ssh_user_name}"
