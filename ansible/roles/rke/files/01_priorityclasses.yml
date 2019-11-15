@@ -1,4 +1,4 @@
-apiVersion: scheduling.k8s.io/v1alpha1
+apiVersion: scheduling.k8s.io/v1beta1
 kind: PriorityClass
 metadata:
   name: default
@@ -6,7 +6,7 @@ value: 0
 globalDefault: true
 description: "The global default priority"
 ---
-apiVersion: scheduling.k8s.io/v1alpha1
+apiVersion: scheduling.k8s.io/v1beta1
 kind: PriorityClass
 metadata:
   name: high-priority
@@ -14,10 +14,19 @@ value: 1000
 globalDefault: false
 description: "High priority pods"
 ---
-apiVersion: scheduling.k8s.io/v1alpha1
+apiVersion: scheduling.k8s.io/v1beta1
 kind: PriorityClass
 metadata:
   name: low-priority
 value: -1000
 globalDefault: false
 description: "Low priority pods"
+---
+apiVersion: scheduling.k8s.io/v1beta1
+kind: PriorityClass
+metadata:
+  name: lowest-priority
+value: -5000
+globalDefault: false
+description: "Lowest priority pods"
+
