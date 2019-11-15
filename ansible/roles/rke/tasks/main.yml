@@ -1,44 +1,44 @@
 - name: download and install kubectl
   get_url:
-    url: https://storage.googleapis.com/kubernetes-release/release/v1.9.3/bin/linux/amd64/kubectl
-    checksum: sha256:81eb30e62a12d6e0527a6a3c2a9501b56d65777bf66684739b16a0afe826c8f8
+    url: https://storage.googleapis.com/kubernetes-release/release/v1.13.4/bin/linux/amd64/kubectl
+    checksum: sha256:92de2edbc8c21cfce6f70daa48e95560274a7413a51a6f8c348d974490fd1338
     dest: /usr/local/bin/kubectl
     mode: 0555
   become: true
 
-#- name: download rke
-#  get_url:
-#    url: https://github.com/rancher/rke/releases/download/v0.1.1/rke
-#    checksum: sha256:00d91bd75e8b68c986fa229eee9606f8f1e69a134a64f02b162d20deb44f3381
-#    dest: /usr/local/bin/rke
-#    mode: 0555
-#  become: true
-
-- name: check out rke from github
-  git:
-    repo: 'https://github.com/rancher/rke'
-    dest: /home/{{ ansible_user }}/rke
-
-- name: install make
-  apt:
-    name: make
-  become: true
-
-- name: build rke
-  make:
-    chdir: /home/{{ ansible_user }}/rke
-  async: 1000
-  poll: 10
-
-- name: install rke binary
-  copy:
-    src: /home/{{ ansible_user }}/rke/bin/rke
+- name: download rke
+  get_url:
+    url: https://github.com/rancher/rke/releases/download/v0.2.0/rke_linux-amd64
+    checksum: sha256:b275dfb7d394ca2d7530c725bf5fc678328d153a755e248bd7a6bc792053d1b6
     dest: /usr/local/bin/rke
     mode: 0555
-    owner: root
-    group: root
-    remote_src: yes
   become: true
+
+#- name: check out rke from github
+#  git:
+#    repo: 'https://github.com/rancher/rke'
+#    dest: /home/{{ ansible_user }}/rke
+
+#- name: install make
+#  apt:
+#    name: make
+#  become: true
+
+#- name: build rke
+#  make:
+#    chdir: /home/{{ ansible_user }}/rke
+#  async: 1000
+#  poll: 10
+
+# - name: install rke binary
+#   copy:
+#     src: /home/{{ ansible_user }}/rke/bin/rke
+#     dest: /usr/local/bin/rke
+#     mode: 0555
+#     owner: root
+#     group: root
+#     remote_src: yes
+#   become: true
 
 - name: install cluster.yml
   copy:
