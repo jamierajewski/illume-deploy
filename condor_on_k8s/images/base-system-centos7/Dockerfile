@@ -1,3 +1,18 @@
+################# compile a singularity rpm ##################
+FROM centos:7 AS singularity_builder
+# Install compilers and other tools                                                                                                                                                                                                                            
+RUN yum -y groups mark convert && \
+    yum -y grouplist && \
+    yum -y groupinstall "Development Tools" && \
+    yum -y install wget && \
+    yum -y clean all && rm -rf /var/cache/yum
+# Build a singularity rpm package we can stage into the next image
+ENV SINGULARITY_VERSION=3.5.0
+RUN wget https://github.com/sylabs/singularity/releases/download/v$SINGULARITY_VERSION/singularity-$SINGULARITY_VERSION.tar.gz \
+    && rpmbuild -ta singularity-$SINGULARITY_VERSION.tar.gz
+
+#https://github.com/sylabs/singularity/releases/download/v3.5.0/singularity-3.5.0.tar.gz
+
 # We will need GPU access in these images,
 # so base on nvidia/cuda, which is in turn
 # based on centos:7.
@@ -37,20 +52,23 @@ RUN yum -y groups mark convert && \
     yum -y install nano astropy-tools bc binutils binutils-devel coreutils \
            curl fontconfig gcc gcc-c++ gcc-gfortran git glew-devel glib2-devel \
            glib-devel graphviz gsl-devel java-1.8.0-openjdk java-1.8.0-openjdk-devel \
-           libgfortran libGLU libgomp libicu libquadmath libtool libtool-ltdl \
+           jq libgfortran libGLU libgomp libicu libquadmath libtool libtool-ltdl \
            libtool-ltdl-devel libX11-devel libXaw-devel libXext-devel \
            libXft-devel libxml2 libxml2-devel libXmu-devel libXpm libXpm-devel \
-           libXt mesa-libGL-devel numpy octave octave-devel openssl098e p7zip \
+           libXt mesa-libGL-devel nodejs numpy octave octave-devel openssl098e p7zip \
            p7zip-plugins python-astropy python-devel R-devel redhat-lsb-core \
            rsync scipy subversion tcl-devel tcsh time tk-devel wget which \
            lzo squashfs-tools mc python-requests tmux screen mosh strace emacs \
-           postgresql mariadb python2-pg8000 PyGreSQL valgrind cronie vim-enhanced && \
+           postgresql mariadb python2-pg8000 PyGreSQL valgrind cronie vim-enhanced zsh && \
     yum -y clean all && rm -rf /var/cache/yum
+
+# Install puppeteer (used for automating web apps;useful for monitoring tools)
+RUN npm i puppeteer
 
 # Install Singularity (in directory-mode only, no loopback mounted images for now,
 # those do not work well in docker [or need many more privileges...])
-#COPY --from=singularity_builder /root/rpmbuild/RPMS/x86_64/singularity-*.rpm /root/
-COPY singularity-*.rpm /root/
+COPY --from=singularity_builder /root/rpmbuild/RPMS/x86_64/singularity-*.rpm /root/
+#COPY singularity-*.rpm /root/
 RUN yum -y install /root/singularity-*.rpm && \
     rm -rf /root/singularity-* && \
     sed -i 's/^[# ]*max loop devices.*/max loop devices = 0/g' /etc/singularity/singularity.conf && \
