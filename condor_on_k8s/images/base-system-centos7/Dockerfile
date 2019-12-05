@@ -7,9 +7,9 @@ RUN yum -y groups mark convert && \
     yum -y install wget && \
     yum -y clean all && rm -rf /var/cache/yum
 # Build a singularity rpm package we can stage into the next image
-ENV SINGULARITY_VERSION=3.5.0
-RUN wget https://github.com/sylabs/singularity/releases/download/v$SINGULARITY_VERSION/singularity-$SINGULARITY_VERSION.tar.gz \
-    && rpmbuild -ta singularity-$SINGULARITY_VERSION.tar.gz
+# ENV SINGULARITY_VERSION=3.5.0
+# RUN wget https://github.com/sylabs/singularity/releases/download/v$SINGULARITY_VERSION/singularity-$SINGULARITY_VERSION.tar.gz \
+#     && rpmbuild -ta singularity-$SINGULARITY_VERSION.tar.gz
 
 #https://github.com/sylabs/singularity/releases/download/v3.5.0/singularity-3.5.0.tar.gz
 
@@ -55,25 +55,27 @@ RUN yum -y groups mark convert && \
            jq libgfortran libGLU libgomp libicu libquadmath libtool libtool-ltdl \
            libtool-ltdl-devel libX11-devel libXaw-devel libXext-devel \
            libXft-devel libxml2 libxml2-devel libXmu-devel libXpm libXpm-devel \
-           libXt mesa-libGL-devel nodejs numpy octave octave-devel openssl098e p7zip \
+           libXt mesa-libGL-devel numpy octave octave-devel openssl098e p7zip \
            p7zip-plugins python-astropy python-devel R-devel redhat-lsb-core \
            rsync scipy subversion tcl-devel tcsh time tk-devel wget which \
            lzo squashfs-tools mc python-requests tmux screen mosh strace emacs \
            postgresql mariadb python2-pg8000 PyGreSQL valgrind cronie vim-enhanced zsh && \
     yum -y clean all && rm -rf /var/cache/yum
 
-# Install puppeteer (used for automating web apps;useful for monitoring tools)
-RUN npm i puppeteer
+# Install Docker CLI within the container (this will allow "sibling" containers to be created)
+RUN yum install -y yum-utils device-mapper-persistent-data lvm2 && \
+	yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo && \
+	yum install -y docker
 
 # Install Singularity (in directory-mode only, no loopback mounted images for now,
 # those do not work well in docker [or need many more privileges...])
-COPY --from=singularity_builder /root/rpmbuild/RPMS/x86_64/singularity-*.rpm /root/
+#COPY --from=singularity_builder /root/rpmbuild/RPMS/x86_64/singularity-*.rpm /root/
 #COPY singularity-*.rpm /root/
-RUN yum -y install /root/singularity-*.rpm && \
-    rm -rf /root/singularity-* && \
-    sed -i 's/^[# ]*max loop devices.*/max loop devices = 0/g' /etc/singularity/singularity.conf && \
-    sed -i 's/^[# ]*enable overlay.*/enable overlay = yes/g' /etc/singularity/singularity.conf && \
-    sed -i 's/^[# ]*allow container squashfs.*/allow container squashfs = no/g' /etc/singularity/singularity.conf && \
-    sed -i 's/^[# ]*allow container extfs.*/allow container extfs = no/g' /etc/singularity/singularity.conf && \
-    sed -i 's/^[# ]*allow container dir.*/allow container dir = yes/g' /etc/singularity/singularity.conf && \
-    yum -y clean all && rm -rf /var/cache/yum
+# RUN yum -y install /root/singularity-*.rpm && \
+#     rm -rf /root/singularity-* && \
+#     sed -i 's/^[# ]*max loop devices.*/max loop devices = 0/g' /etc/singularity/singularity.conf && \
+#     sed -i 's/^[# ]*enable overlay.*/enable overlay = yes/g' /etc/singularity/singularity.conf && \
+#     sed -i 's/^[# ]*allow container squashfs.*/allow container squashfs = no/g' /etc/singularity/singularity.conf && \
+#     sed -i 's/^[# ]*allow container extfs.*/allow container extfs = no/g' /etc/singularity/singularity.conf && \
+#     sed -i 's/^[# ]*allow container dir.*/allow container dir = yes/g' /etc/singularity/singularity.conf && \
+#     yum -y clean all && rm -rf /var/cache/yum
