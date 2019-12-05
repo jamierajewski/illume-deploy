@@ -78,7 +78,7 @@ spec:
             mountPath: /scratch
             mountPropagation: Bidirectional
       - name: sub
-        image: illumecluster/htcondor-schedd:latest
+        image: illumecluster/htcondor-schedd:2.0
         resources:
           requests:
             memory: "8.0Gi"
