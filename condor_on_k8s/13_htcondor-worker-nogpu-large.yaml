@@ -100,6 +100,8 @@ spec:
           - name: scratch
             mountPath: /scratch
             subPath: scratch_loop
+          - name: datadir
+            mountPath: /data
         ports:
         - containerPort: 9618
           protocol: TCP
@@ -111,6 +113,10 @@ spec:
       - name: homedir
         nfs:
           server: 192.168.19.2
+          path: "/mnt/tank/export/scratch/icecube"
+      - name: datadir
+        nfs:
+          server: 192.168.19.6
           path: "/mnt/tank/export/scratch/icecube"
       - name: cvmfs
         hostPath:
