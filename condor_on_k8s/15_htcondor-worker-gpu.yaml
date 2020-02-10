@@ -6,7 +6,7 @@ metadata:
   name: illume-work-gpu
   namespace: illume
 spec:
-  replicas: 16
+  replicas: 31 # 31
   # we can handle parallel deployment
   podManagementPolicy: Parallel
   selector:

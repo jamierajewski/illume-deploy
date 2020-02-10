@@ -78,15 +78,15 @@ spec:
             mountPath: /scratch
             mountPropagation: Bidirectional
       - name: sub
-        image: illumecluster/htcondor-schedd:2.0
+        image: illumecluster/htcondor-schedd:20200207
         resources:
           requests:
             memory: "8.0Gi"
-            cpu: "1000m"
+            cpu: "8000m"
             # ephemeral-storage: "30Gi" # this is everything except for scratch
           limits:
             memory: "8.0Gi"
-            cpu: "1000m"
+            cpu: "8000m"
             # ephemeral-storage: "30Gi" # this is everything except for scratch
         # we need this to make Singularity work: (more privileges)
         securityContext:
