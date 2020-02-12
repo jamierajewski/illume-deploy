@@ -65,5 +65,6 @@ RUN yum -y groupinstall \
            p7zip-plugins python-astropy python-devel R-devel redhat-lsb-core \
            rsync scipy subversion tcl-devel tcsh time tk-devel which \
            lzo squashfs-tools mc python-requests tmux screen mosh strace emacs \
-           postgresql mariadb python2-pg8000 PyGreSQL valgrind cronie vim-enhanced zsh && \
+           postgresql mariadb python2-pg8000 PyGreSQL valgrind cronie vim-enhanced zsh \
+	   xorg-x11-xauth && \
     yum -y clean all && rm -rf /var/cache/yum
