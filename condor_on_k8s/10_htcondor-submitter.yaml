@@ -82,11 +82,11 @@ spec:
         resources:
           requests:
             memory: "8.0Gi"
-            cpu: "8000m"
+            cpu: "4000m"
             # ephemeral-storage: "30Gi" # this is everything except for scratch
           limits:
             memory: "8.0Gi"
-            cpu: "8000m"
+            cpu: "4000m"
             # ephemeral-storage: "30Gi" # this is everything except for scratch
         # we need this to make Singularity work: (more privileges)
         securityContext:
