@@ -6,7 +6,7 @@ metadata:
   name: illume-work-nogpu-small
   namespace: illume
 spec:
-  replicas: 1
+  replicas: 0
   # we can handle parallel deployment
   podManagementPolicy: Parallel
   selector:
