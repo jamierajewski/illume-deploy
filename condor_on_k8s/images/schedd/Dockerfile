@@ -14,7 +14,7 @@ RUN chmod +x /sbin/tini && \
     yum -y clean all && rm -rf /var/cache/yum
 
 # Install sub node-specific tools that aren't necessary across all nodes
-RUN yum -y install htop
+RUN yum -y install htop iostat
 
 COPY sshd_config /etc/ssh/sshd_config
 COPY condor_config.local /etc/condor/
