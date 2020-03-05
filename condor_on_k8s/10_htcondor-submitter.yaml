@@ -81,11 +81,11 @@ spec:
         image: illumecluster/htcondor-schedd:20200207
         resources:
           requests:
-            memory: "8.0Gi"
+            memory: "50.0Gi"
             cpu: "4000m"
             # ephemeral-storage: "30Gi" # this is everything except for scratch
           limits:
-            memory: "8.0Gi"
+            memory: "50.0Gi"
             cpu: "4000m"
             # ephemeral-storage: "30Gi" # this is everything except for scratch
         # we need this to make Singularity work: (more privileges)
