@@ -285,7 +285,7 @@ def main():
                 hostname="illume-worker-{}-{:02d}".format(worker_kind, idx+1),
                 username=ssh_username)
 
-            if worker_kind != "nogpu":
+            if worker_kind not in ["nogpu", "nogpu-8core"]:
                 accelerator_tags = {
                     "1080ti"  : "nvidia-gtx-1080ti",
                     "titanx"  : "nvidia-titanx",
