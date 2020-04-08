@@ -89,7 +89,7 @@ spec:
     spec:
       containers:
       - name: neg
-        image: illumecluster/htcondor-negotiator:latest
+        image: illumecluster/htcondor-negotiator:20200313c
         resources:
           requests:
             memory: "1.0Gi"
