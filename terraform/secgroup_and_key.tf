@@ -1,6 +1,6 @@
 resource "openstack_compute_keypair_v2" "illume" {
   name       = "illume"
-  public_key = "${file("${var.ssh_key_file}.pub")}"
+  public_key = file("${var.ssh_key_file}.pub")
 }
 
 resource "openstack_compute_secgroup_v2" "illume-ingress" {
@@ -85,24 +85,25 @@ resource "openstack_compute_secgroup_v2" "illume-bastion" {
 }
 
 resource "openstack_compute_secgroup_v2" "illume-internal" {
-  name = "illume-internal"
+  name        = "illume-internal"
   description = "Allow internal traffic between all nodes"
   rule {
-    from_port = 1
-    to_port = 65535
+    from_port   = 1
+    to_port     = 65535
     ip_protocol = "tcp"
-    cidr = "${var.local_subnet}"
+    cidr        = var.local_subnet
   }
   rule {
-    from_port = 1
-    to_port = 65535
+    from_port   = 1
+    to_port     = 65535
     ip_protocol = "udp"
-    cidr = "${var.local_subnet}"
+    cidr        = var.local_subnet
   }
   rule {
-    from_port = -1
-    to_port = -1
+    from_port   = -1
+    to_port     = -1
     ip_protocol = "icmp"
-    cidr = "${var.local_subnet}"
+    cidr        = var.local_subnet
   }
 }
+

@@ -1,6 +1,8 @@
-variable "username" { }
+variable "username" {
+}
 
-variable "password" { }
+variable "password" {
+}
 
 variable "image-url" {
   # default = "https://cloud-images.ubuntu.com/artful/current/artful-server-cloudimg-amd64.img"
@@ -31,3 +33,4 @@ variable "network" {
 variable "local_subnet" {
   default = "192.168.19.0/24"
 }
+

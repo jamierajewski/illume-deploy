@@ -1,48 +1,48 @@
 resource "openstack_compute_instance_v2" "illume-worker-nogpu-10core" {
-    depends_on = ["openstack_compute_floatingip_associate_v2.illume-bastion",
-                  # provision all GPU instances first to make sure we do not
-                  # use up their slots for anything else
-                  "openstack_compute_instance_v2.illume-worker-1080ti"]
+  depends_on = [
+    openstack_compute_floatingip_associate_v2.illume-bastion,
+    openstack_compute_instance_v2.illume-worker-1080ti,
+  ]
 
-    count = 0
-    name = "${format("illume-worker-nogpu-10core-%02d", count.index+1)}"
+  count = 0
+  name  = format("illume-worker-nogpu-10core-%02d", count.index + 1)
 
-    flavor_name     = "c10-128GB-1440"
-    image_id        = "${openstack_images_image_v2.illume-ubuntu.id}"
-    key_pair        = "${openstack_compute_keypair_v2.illume.name}"
-    security_groups = [
-      "${openstack_compute_secgroup_v2.illume-internal.name}"
-    ]
+  flavor_name = "c10-128GB-1440"
+  image_id    = openstack_images_image_v2.illume-ubuntu.id
+  key_pair    = openstack_compute_keypair_v2.illume.name
+  security_groups = [
+    openstack_compute_secgroup_v2.illume-internal.name,
+  ]
 
-    # boot device (ephemeral)
-    block_device {
-       boot_index            = 0
-       delete_on_termination = true
-       destination_type      = "local"
-       source_type           = "image"
-       uuid                  = "${openstack_images_image_v2.illume-ubuntu.id}"
-    }
+  # boot device (ephemeral)
+  block_device {
+    boot_index            = 0
+    delete_on_termination = true
+    destination_type      = "local"
+    source_type           = "image"
+    uuid                  = openstack_images_image_v2.illume-ubuntu.id
+  }
 
-    # assign all ephemeral storage for this flavor (1440GB),
-    # then split it up into partitions.
-    # (OpenStack on cirrus did not seem to allow me to create more
-    # than 2 ephemeral disks, so use partitions on a single disk instead.)
-    block_device {
-       boot_index            = -1
-       delete_on_termination = true
-       destination_type      = "local"
-       source_type           = "blank"
-       volume_size           = 1440
-     }
+  # assign all ephemeral storage for this flavor (1440GB),
+  # then split it up into partitions.
+  # (OpenStack on cirrus did not seem to allow me to create more
+  # than 2 ephemeral disks, so use partitions on a single disk instead.)
+  block_device {
+    boot_index            = -1
+    delete_on_termination = true
+    destination_type      = "local"
+    source_type           = "blank"
+    volume_size           = 1440
+  }
 
-    # split ephemeral storage into 3 parts:
-    #  202GB - ephemeral0.1 (14%)
-    # 1166GB - ephemeral0.2 (81%)
-    #   72GB - ephemeral0.3 ( 5%)
-    # mount ephemeral storage #0.1 to /var/lib/docker
-    # mount ephemeral storage #0.2 to /var/lib/kubelet
-    # mount ephemeral storage #0.3 to /var/lib/cvmfs
-    user_data       = <<EOF
+  # split ephemeral storage into 3 parts:
+  #  202GB - ephemeral0.1 (14%)
+  # 1166GB - ephemeral0.2 (81%)
+  #   72GB - ephemeral0.3 ( 5%)
+  # mount ephemeral storage #0.1 to /var/lib/docker
+  # mount ephemeral storage #0.2 to /var/lib/kubelet
+  # mount ephemeral storage #0.3 to /var/lib/cvmfs
+  user_data = <<EOF
 #cloud-config
 disk_setup:
   ephemeral0:
@@ -70,57 +70,60 @@ mounts:
   - [ ephemeral0.3, /var/lib/cvmfs ]
 EOF
 
-    network {
-      name = "${var.network}"
-    }
 
-    provisioner "remote-exec" {
-      connection {
-        host     = "${self.network.0.fixed_ip_v4}"
-        user     = "${var.ssh_user_name}"
-        private_key = "${file(var.ssh_key_file)}"
-        port     = 22
+  network {
+    name = var.network
+  }
 
-        bastion_host = "${openstack_compute_floatingip_v2.illume-bastion.address}"
-        bastion_user = "${var.ssh_user_name}"
-        bastion_private_key = "${file(var.ssh_key_file)}"
-        bastion_port = 22
-      }
-
-      inline = [
-        "sudo DEBIAN_FRONTEND=noninteractive apt-get -y update",
-        "sudo DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade",
-        "sudo DEBIAN_FRONTEND=noninteractive apt-get -y install python",
-        "sudo sed -i 's/^[# ]*Port .*/Port 2222/' /etc/ssh/sshd_config",
-        "sudo shutdown -r now",
-      ]
-    }
-
+  provisioner "remote-exec" {
     connection {
-      host     = "${self.network.0.fixed_ip_v4}"
-      user     = "${var.ssh_user_name}"
-      private_key = "${file(var.ssh_key_file)}"
-      port     = 2222
+      type        = "ssh"
+      host        = self.network[0].fixed_ip_v4
+      user        = var.ssh_user_name
+      private_key = file(var.ssh_key_file)
+      port        = 22
 
-      bastion_host = "${openstack_compute_floatingip_v2.illume-bastion.address}"
-      bastion_user = "${var.ssh_user_name}"
-      bastion_private_key = "${file(var.ssh_key_file)}"
-      bastion_port = 22
+      bastion_host        = openstack_compute_floatingip_v2.illume-bastion.address
+      bastion_user        = var.ssh_user_name
+      bastion_private_key = file(var.ssh_key_file)
+      bastion_port        = 22
     }
 
-    provisioner "remote-exec" {
-      inline = [ "#wait" ]
-    }
+    inline = [
+      "sudo DEBIAN_FRONTEND=noninteractive apt-get -y update",
+      "sudo DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade",
+      "sudo DEBIAN_FRONTEND=noninteractive apt-get -y install python",
+      "sudo sed -i 's/^[# ]*Port .*/Port 2222/' /etc/ssh/sshd_config",
+      "sudo shutdown -r now",
+    ]
+  }
 
-    provisioner "file" {
-      source = "${var.ssh_key_file}"
-      destination = "/home/${var.ssh_user_name}/.ssh/illume_key"
-    }
+  connection {
+    type        = "ssh"
+    host        = self.network[0].fixed_ip_v4
+    user        = var.ssh_user_name
+    private_key = file(var.ssh_key_file)
+    port        = 2222
 
-    provisioner "remote-exec" {
-      inline = [
-        "chmod og-rwx /home/${var.ssh_user_name}/.ssh/illume_key",
-      ]
-    }
+    bastion_host        = openstack_compute_floatingip_v2.illume-bastion.address
+    bastion_user        = var.ssh_user_name
+    bastion_private_key = file(var.ssh_key_file)
+    bastion_port        = 22
+  }
 
+  provisioner "remote-exec" {
+    inline = ["#wait"]
+  }
+
+  provisioner "file" {
+    source      = var.ssh_key_file
+    destination = "/home/${var.ssh_user_name}/.ssh/illume_key"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod og-rwx /home/${var.ssh_user_name}/.ssh/illume_key",
+    ]
+  }
 }
+
