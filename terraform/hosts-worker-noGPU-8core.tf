@@ -4,7 +4,7 @@ resource "openstack_compute_instance_v2" "illume-worker-nogpu-8core" {
     openstack_compute_instance_v2.illume-worker-1080ti,
   ]
 
-  count = 0
+  count = 6
   name  = format("illume-worker-nogpu-8core-%02d", count.index + 1)
 
   flavor_name = "c8-64GB-720"
