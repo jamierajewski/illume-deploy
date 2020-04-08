@@ -91,9 +91,30 @@ EOF
       "sudo DEBIAN_FRONTEND=noninteractive apt-get -y update",
       "sudo DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade",
       "sudo DEBIAN_FRONTEND=noninteractive apt-get -y install python",
+    ]
+  }
+
+  provisioner "remote-exec" {
+    connection {
+      type        = "ssh"
+      host        = self.network[0].fixed_ip_v4
+      user        = var.ssh_user_name
+      private_key = file(var.ssh_key_file)
+      port        = 22
+      timeout     = "20m"
+
+      bastion_host        = openstack_compute_floatingip_v2.illume-bastion.address
+      bastion_user        = var.ssh_user_name
+      bastion_private_key = file(var.ssh_key_file)
+      bastion_port        = 22
+    }
+
+    inline = [
       "sudo sed -i 's/^[# ]*Port .*/Port 2222/' /etc/ssh/sshd_config",
       "sudo shutdown -r +1",
     ]
+
+    on_failure = continue
   }
 
   provisioner "local-exec" {

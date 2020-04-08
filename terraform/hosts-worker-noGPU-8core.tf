@@ -4,10 +4,10 @@ resource "openstack_compute_instance_v2" "illume-worker-nogpu-8core" {
     openstack_compute_instance_v2.illume-worker-1080ti,
   ]
 
-  count = 6
+  count = 7
   name  = format("illume-worker-nogpu-8core-%02d", count.index + 1)
 
-  flavor_name = "c8-64GB-720"
+  flavor_name = "c8-32GB-360"
   image_id    = openstack_images_image_v2.illume-ubuntu.id
   key_pair    = openstack_compute_keypair_v2.illume.name
   security_groups = [
@@ -23,7 +23,7 @@ resource "openstack_compute_instance_v2" "illume-worker-nogpu-8core" {
     uuid                  = openstack_images_image_v2.illume-ubuntu.id
   }
 
-  # assign all ephemeral storage for this flavor (720GB),
+  # assign all ephemeral storage for this flavor (360),
   # then split it up into partitions.
   # (OpenStack on cirrus did not seem to allow me to create more
   # than 2 ephemeral disks, so use partitions on a single disk instead.)
@@ -32,13 +32,13 @@ resource "openstack_compute_instance_v2" "illume-worker-nogpu-8core" {
     delete_on_termination = true
     destination_type      = "local"
     source_type           = "blank"
-    volume_size           = 720
+    volume_size           = 360
   }
 
   # split ephemeral storage into 3 parts:
-  # 202GB - ephemeral0.1 (28%)
-  # 454GB - ephemeral0.2 (63%)
-  #  65GB - ephemeral0.3 ( 9%)
+  # 126GB - ephemeral0.1 (35%)
+  # 162GB - ephemeral0.2 (45%)
+  #  72GB - ephemeral0.3 (20%)
   # mount ephemeral storage #0.1 to /var/lib/docker
   # mount ephemeral storage #0.2 to /var/lib/kubelet
   # mount ephemeral storage #0.3 to /var/lib/cvmfs
@@ -48,9 +48,9 @@ disk_setup:
   ephemeral0:
     table_type: 'gpt'
     layout:
-      - 28
-      - 63
-      - 9
+      - 35
+      - 45
+      - 20
     overwrite: true
 
 fs_setup:
@@ -82,6 +82,7 @@ EOF
       user        = var.ssh_user_name
       private_key = file(var.ssh_key_file)
       port        = 22
+      timeout     = "600s"
 
       bastion_host        = openstack_compute_floatingip_v2.illume-bastion.address
       bastion_user        = var.ssh_user_name
@@ -93,9 +94,30 @@ EOF
       "sudo DEBIAN_FRONTEND=noninteractive apt-get -y update",
       "sudo DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade",
       "sudo DEBIAN_FRONTEND=noninteractive apt-get -y install python",
-      "sudo sed -i 's/^[# ]*Port .*/Port 2222/' /etc/ssh/sshd_config",
-      "sudo shutdown -r now",
     ]
+  }
+
+  provisioner "remote-exec" {
+    connection {
+      type        = "ssh"
+      host        = self.network[0].fixed_ip_v4
+      user        = var.ssh_user_name
+      private_key = file(var.ssh_key_file)
+      port        = 22
+      timeout     = "600s"
+
+      bastion_host        = openstack_compute_floatingip_v2.illume-bastion.address
+      bastion_user        = var.ssh_user_name
+      bastion_private_key = file(var.ssh_key_file)
+      bastion_port        = 22
+    }
+
+    inline = [
+      "sudo sed -i 's/^[# ]*Port .*/Port 2222/' /etc/ssh/sshd_config",
+      "sudo shutdown -r +0",
+    ]
+    
+    on_failure = continue
   }
 
   connection {
