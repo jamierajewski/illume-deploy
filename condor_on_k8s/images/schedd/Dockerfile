@@ -17,7 +17,7 @@ RUN chmod +x /sbin/tini && \
 RUN pip install --upgrade pip
 
 # Install sub node-specific tools that aren't necessary across all nodes
-RUN yum -y install htop iostat postgresql-devel
+RUN yum -y install htop sysstat postgresql-devel
 
 COPY sshd_config /etc/ssh/sshd_config
 COPY condor_config.local /etc/condor/
