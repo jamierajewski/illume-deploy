@@ -1,7 +1,7 @@
 # We will need GPU access in these images,
 # so base on nvidia/cuda, which is in turn
 # based on centos:7.
-FROM nvidia/cuda:10.0-cudnn7-devel-centos7
+FROM nvidia/cuda:10.1-cudnn7-devel-centos7
 
 MAINTAINER Claudio Kopper <kopper@ualberta.ca>
 
@@ -68,3 +68,8 @@ RUN yum -y groupinstall \
            postgresql mariadb python2-pg8000 PyGreSQL valgrind cronie vim-enhanced zsh \
 	   xorg-x11-xauth && \
     yum -y clean all && rm -rf /var/cache/yum
+
+# Install Python 3 and Jupyter
+RUN yum -y install python3 && \
+    pip3 install --upgrade pip && \
+    pip3 install jupyter
