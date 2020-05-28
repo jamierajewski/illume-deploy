@@ -1,0 +1,132 @@
+# Implemented as a StatefulSet so we can have a volume mount per pod,
+# since we want to have per-pod/per-worker scratch space.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: illume-work-interactive-gpu
+  namespace: illume
+spec:
+  replicas: 2
+  # we can handle parallel deployment
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: illume-work
+      kind: gpu
+  serviceName: "illume-work"
+  template:
+    metadata:
+      labels:
+        app: illume-work
+        kind: gpu
+      # we need this to make Singularity work: (more privileges)
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/work: unconfined
+    spec:
+      initContainers:
+      - name: create-scratch-loopback
+        # create the /scratch/scratch_loop directory before starting anything else
+        image: ubuntu:16.04
+        command: ["/bin/sh"]
+        # TODO: get the size (count) from the pod spec via env
+        args: ["-c", "/usr/bin/fallocate -l 700G /scratch/scratch.img && mkfs.ext4 /scratch/scratch.img && mkdir -p /scratch/scratch_loop"]
+        volumeMounts:
+          - name: scratch
+            mountPath: /scratch
+      containers:
+      - name: scratch-loopback
+        image: ubuntu:16.04
+        command: ["/bin/sh"]
+        args: ["-c", "mount -o loop /scratch/scratch.img /scratch/scratch_loop && /bin/sleep infinity"]
+        lifecycle:
+          preStop:
+            exec:
+              # Do a lazy unmount of the loopback /scratch we created in the initContainer.
+              command: ["/bin/umount","-l","/scratch"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - name: scratch
+            mountPath: /scratch
+            mountPropagation: Bidirectional
+      - name: work
+        image: illumecluster/htcondor-int-worker:20200527
+        resources:
+          requests:
+            memory: "56Gi"   # 7GiB of memory per core
+            cpu: "4"         # 8 CPU cores
+            # ephemeral-storage: "30Gi" # this is everything except for scratch
+            nvidia.com/gpu: 1 # request 2 GPUs (one CPU core per GPU)
+          limits:
+            memory: "56Gi"   # 7GiB of memory per core
+            cpu: "4000m"     # 8 CPU cores (don't use quite *all* of the available CPU)
+            # ephemeral-storage: "30Gi" # this is everything except for scratch
+            nvidia.com/gpu: 1
+        # we need this to make Singularity work: (more privileges)
+        securityContext:
+          capabilities:
+            add:
+              - SYS_ADMIN
+        env:
+        - name: CONDOR_HOST
+          value: "illume-coll"
+        - name: SEC_PASSWORD_FILE
+          value: "/etc/condor/pool_password/password"
+        - name: CONDOR_SCRATCH
+          value: "/scratch"
+        - name: LDAP_SERVER
+          value: "openldap.illume"
+        - name: LDAP_BASEDN
+          value: "dc=illume,dc=systems"
+        # let condor know about out CPU and memory limits
+        - name: CPU_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: work
+              resource: limits.cpu
+        - name: MEM_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: work
+              resource: limits.memory
+        volumeMounts:
+          - name: pool-password
+            mountPath: /etc/condor/pool_password
+          - name: homedir
+            mountPath: /home
+            subPath: illume/home
+          - name: cvmfs
+            mountPath: /cvmfs
+          - name: scratch
+            mountPath: /scratch
+            subPath: scratch_loop
+          - name: datadir
+            mountPath: /data
+          - name: datadir2
+            mountPath: /data2
+        ports:
+        - containerPort: 9618
+          protocol: TCP
+      volumes:
+      - name: pool-password
+        secret:
+          defaultMode: 0600
+          secretName: htcondor-pool-password
+      - name: homedir
+        nfs:
+          server: 192.168.19.2
+          path: "/mnt/tank/export/scratch/icecube"
+      - name: datadir
+        nfs:
+          server: 192.168.19.6
+          path: "/mnt/tank/export/scratch/icecube"
+      - name: datadir2
+        nfs:
+          server: 192.168.19.3
+          path: "/mnt/tank/export/scratch/icecube"			  
+      - name: cvmfs
+        hostPath:
+          path: "/cvmfs"
+      - name: scratch
+        emptyDir: {}
+        #  sizeLimit: 700Gi
