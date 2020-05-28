@@ -52,7 +52,7 @@ spec:
             mountPath: /scratch
             mountPropagation: Bidirectional
       - name: work
-        image: illumecluster/htcondor-worker:latest
+        image: illumecluster/htcondor-worker:20200528
         resources:
           requests:
             memory: "96Gi"    # 16GiB of memory per core

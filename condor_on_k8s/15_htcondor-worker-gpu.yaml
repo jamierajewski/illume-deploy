@@ -6,7 +6,7 @@ metadata:
   name: illume-work-gpu
   namespace: illume
 spec:
-  replicas: 31 # 31
+  replicas: 29
   # we can handle parallel deployment
   podManagementPolicy: Parallel
   selector:
@@ -50,7 +50,7 @@ spec:
             mountPath: /scratch
             mountPropagation: Bidirectional
       - name: work
-        image: illumecluster/htcondor-worker:2.0
+        image: illumecluster/htcondor-worker:20200528
         resources:
           requests:
             memory: "112Gi"   # 7GiB of memory per core

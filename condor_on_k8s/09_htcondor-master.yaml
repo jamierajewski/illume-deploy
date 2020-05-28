@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
       - name: coll
-        image: illumecluster/htcondor-collector:latest
+        image: illumecluster/htcondor-collector:20200519
         resources:
           requests:
             memory: "1.0Gi"
@@ -89,7 +89,7 @@ spec:
     spec:
       containers:
       - name: neg
-        image: illumecluster/htcondor-negotiator:20200313c
+        image: illumecluster/htcondor-negotiator:20200519
         resources:
           requests:
             memory: "1.0Gi"
