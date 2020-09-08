@@ -1,4 +1,4 @@
-resource "openstack_compute_floatingip_v2" "illume-bastion" {
+resource "openstack_networking_floatingip_v2" "illume-bastion" {
   pool = var.floating-ip-pool
 }
 
