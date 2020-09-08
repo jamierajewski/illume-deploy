@@ -28,11 +28,11 @@ resource "openstack_compute_instance_v2" "illume-bastion" {
 }
 
 resource "openstack_compute_floatingip_associate_v2" "illume-bastion" {
-  floating_ip = openstack_compute_floatingip_v2.illume-bastion.address
+  floating_ip = openstack_networking_floatingip_v2.illume-bastion.address
   instance_id = openstack_compute_instance_v2.illume-bastion.id
 
   connection {
-    host        = openstack_compute_floatingip_v2.illume-bastion.address
+    host        = openstack_networking_floatingip_v2.illume-bastion.address
     user        = var.ssh_user_name
     private_key = file(var.ssh_key_file)
   }
@@ -53,21 +53,21 @@ resource "openstack_compute_floatingip_associate_v2" "illume-bastion" {
 
   provisioner "file" {
     source      = var.ssh_key_file
-    destination = "/home/${var.ssh_user_name}/.ssh/illume_key"
+    destination = "/home/${var.ssh_user_name}/.ssh/illume-new"
   }
 
   provisioner "remote-exec" {
     inline = [
-      "chmod og-rwx /home/${var.ssh_user_name}/.ssh/illume_key",
+      "chmod og-rwx /home/${var.ssh_user_name}/.ssh/illume-new",
     ]
   }
 
   provisioner "file" {
     content = <<EOF
-Host 192.168.19.*
+Host 192.168.254.*
   User ubuntu
   Port 2222
-  IdentityFile /home/${var.ssh_user_name}/.ssh/illume_key
+  IdentityFile /home/${var.ssh_user_name}/.ssh/illume-new
 EOF
 
 
