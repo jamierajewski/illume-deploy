@@ -5,17 +5,16 @@ variable "password" {
 }
 
 variable "image-url" {
-  # default = "https://cloud-images.ubuntu.com/artful/current/artful-server-cloudimg-amd64.img"
-  default = "https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img"
+  #default = "https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img"
+  default = "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
 }
 
 variable "image-name" {
-  # default = "illume-ubuntu-aartful"
-  default = "illume-ubuntu-xenial"
+  default = "illume-ubuntu-focal"
 }
 
 variable "ssh_key_file" {
-  default = "~/.ssh/illume_key"
+  default = "~/.ssh/illume-new"
 }
 
 variable "ssh_user_name" {
@@ -27,10 +26,10 @@ variable "floating-ip-pool" {
 }
 
 variable "network" {
-  default = "IceCube_network"
+  default = "IceCube2_network"
 }
 
 variable "local_subnet" {
-  default = "192.168.19.0/24"
+  default = "192.168.254.0/24"
 }
 
