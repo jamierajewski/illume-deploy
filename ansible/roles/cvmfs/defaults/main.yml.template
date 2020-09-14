@@ -1,9 +1,0 @@
-cvmfs_proxies: "$cvmfs_proxies"
-cvmfs_mounts:
-  - icecube.opensciencegrid.org
-  - oasis.opensciencegrid.org
-  - singularity.opensciencegrid.org
-  - config-osg.opensciencegrid.org
-  - snoplus.egi.eu
-  - ganga.cern.ch
-  - grid.cern.ch

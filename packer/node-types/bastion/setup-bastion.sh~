@@ -1,0 +1,37 @@
+#!/bin/bash 
+
+set -ex
+
+#### Worker Node Provisioner ###
+# Gets run within the Terraform configuration for the worker node
+# Author: Jamie Rajewski
+################################
+
+### DEFINE SOFTWARE VERSIONS HERE ###
+
+### MAKE SURE ALL CUSTOM SCRIPTS AND STEPS FROM ANSIBLE ARE ADDED IN
+
+# 0. Set the frontend to noninteractive
+export DEBIAN_FRONTEND=noninteractive
+
+# 1. Update/dist-upgrade
+sudo apt-get update -y
+sudo apt-get dist-upgrade -y
+
+# 2. Dependencies
+sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common \
+     curl wget git
+     
+# 3. Docker
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+sudo apt update -y
+apt-cache policy docker-ce
+sudo apt install -y docker-ce
+sudo usermod -aG docker ${USER}
+# Need to reboot VM here for docker group change to take effect
+
+# 4. Enable Docker Rootless
+
+
+# 7. CVMFS - Does that go here or later?

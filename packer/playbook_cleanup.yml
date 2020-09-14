@@ -1,0 +1,7 @@
+---
+# clean up kubernetes
+- hosts: all
+  gather_facts: false
+  roles:
+    - role: cleanup
+      tags: cleanup

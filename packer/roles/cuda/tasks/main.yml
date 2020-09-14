@@ -1,0 +1,183 @@
+- name: add the cuda repository apt key
+  apt_key:
+    url: http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
+    state: present
+  become: true
+
+- name: add the cuda repository
+  apt_repository:
+    repo: deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /
+    state: present
+  become: true
+
+- name: install cuda
+  apt:
+    name: cuda
+    update_cache: yes
+  become: true
+  async: 3000
+  poll: 10
+
+- name: install the CUDA profile.d file
+  copy:
+    src: ../files/etc-profile.d-cuda.sh
+    dest: /etc/profile.d/cuda.sh
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+    backup: yes
+    force: yes
+  become: true
+
+- name: check if we can load the nvidia-uvm kernel module
+  command: /sbin/modprobe nvidia-uvm
+  register: _modprobe_nvidia_uvm
+  failed_when: false
+  changed_when: false
+  ignore_errors: true
+  become: true
+
+- name: Set the nvidia kernel module options
+  copy:
+    src: ../files/modprobe.d-nvidia.conf
+    dest: /etc/modprobe.d/nvidia.conf
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+    force: yes
+  become: true
+  notify:
+    - rebuild initrd
+    - reboot host and wait
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
+- name: make sure /usr/local/bin/nvidia-max-power-limit exists
+  copy:
+    src: ../files/nvidia-max-power-limit
+    dest: /usr/local/bin/nvidia-max-power-limit
+    owner: root
+    group: root
+    mode: "u=rwx,g=rx,o=rx"
+    force: yes
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
+- name: make sure /etc/systemd/system/nvidia-max-power-limit.service exists
+  copy:
+    src: ../files/nvidia-max-power-limit.service
+    dest: /etc/systemd/system/nvidia-max-power-limit.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+    force: yes
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
+- name: enable and start the nvidia-persistenced.service
+  systemd:
+    name: nvidia-persistenced
+    daemon_reload: yes
+    state: started
+    enabled: yes
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
+- name: enable and start the nvidia-max-power-limit.service
+  systemd:
+    name: nvidia-max-power-limit
+    daemon_reload: yes
+    state: started
+    enabled: yes
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
+- name: install xorg
+  apt:
+    name: xorg
+    update_cache: yes
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
+- name: disable lightdm.service Xorg window manager
+  systemd:
+    name: lightdm
+    state: stopped
+    enabled: no
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
+- name: install set-gpu-fans scripts
+  copy:
+    src: ../files/set-gpu-fans/
+    dest: /opt/set-gpu-fans/
+    owner: root
+    group: root
+    force: yes
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
+- name: make set-gpu-fans/nvscmd scripts executable
+  file:
+    path: /opt/set-gpu-fans/nvscmd
+    mode: "u=rwx,g=rx,o=rx"
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
+- name: make set-gpu-fans/cool_gpu scripts executable
+  file:
+    path: /opt/set-gpu-fans/cool_gpu
+    mode: "u=rwx,g=rx,o=rx"
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
+- name: install set-gpu-fans.service systemd service
+  copy:
+    src: ../files/set-gpu-fans.service
+    dest: /etc/systemd/system/set-gpu-fans.service
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+    force: true
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
+# somehow this doesn't work on Ubuntu 16.04
+- name: enable and start the set-gpu-fans.service
+  systemd:
+    name: set-gpu-fans
+    daemon_reload: true
+    #state: started
+    state: stopped # use rc.local as a work-around for now
+    #enabled: yes
+    enabled: no # use rc.local as a work-around for now
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+
+
+- name: Make sure set-gpu-fans is the default runtime
+  lineinfile:
+    dest=/etc/rc.local
+    regexp='^set-gpu-fans'
+    line='/opt/set-gpu-fans/cool_gpu >/dev/null 2>&1 &'
+    insertbefore='^exit 0'
+    state=present
+  become: true
+  when: "_modprobe_nvidia_uvm.rc == 0"
+  notify:
+    - reboot host and wait
+
+
+- name: check if we should reboot the system
+  stat:
+    path: /var/run/reboot-required
+    get_md5: no
+  register: rebootfile
+  become: true
+
+- name: trigger reboot if previous check succeeded
+  command: /bin/true
+  when: rebootfile.stat.exists == true
+  notify:
+    - reboot host and wait
+
+- meta: flush_handlers

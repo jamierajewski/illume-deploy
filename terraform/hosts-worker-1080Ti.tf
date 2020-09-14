@@ -5,7 +5,9 @@ resource "openstack_compute_instance_v2" "illume-worker-1080ti" {
   name  = format("illume-worker-1080ti-%02d", count.index + 1)
 
   flavor_name = "c16-116gb-3400-4.1080ti"
-  image_id    = openstack_images_image_v2.illume-ubuntu.id
+  #image_id    = openstack_images_image_v2.illume-ubuntu.id
+  # In OpenStack -> Ubuntu-20.04-Focal-x64-2020-04
+  image_id    = "59c3f5e2-194f-43e9-bbc5-8d06eea21b51"
   key_pair    = openstack_compute_keypair_v2.illume.name
   security_groups = [
     openstack_compute_secgroup_v2.illume-internal.name,

@@ -1,0 +1,16 @@
+- name: rebuild initrd
+  command: /usr/sbin/update-initramfs -u
+  become: true
+
+- name: reboot host
+  command: /usr/bin/systemd-run --on-active=10 /bin/systemctl reboot
+  async: 0
+  poll: 0
+  listen: "reboot host and wait"
+  become: true
+
+- name: wait for host to become available again
+  wait_for_connection:
+    delay: 60
+    timeout: 600
+  listen: "reboot host and wait"

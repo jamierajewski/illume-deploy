@@ -1,0 +1,61 @@
+- name: make sure /cvmfs exists
+  file:
+    path: /cvmfs
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  become: true
+
+- name: install cvmfs repo package
+  apt:
+    deb: https://ecsft.cern.ch/dist/cvmfs/cvmfs-release/cvmfs-release-latest_all.deb
+    state: present
+  become: true
+
+- name: install cvmfs package
+  apt:
+    name: cvmfs,cvmfs-config-default
+    state: latest
+    update_cache: yes
+  become: true
+  async: 1000
+  poll: 10
+
+- name: make sure user_allow_other is set in /etc/fuse.conf
+  lineinfile:
+    dest=/etc/fuse.conf
+    line='user_allow_other'
+    regexp='^user_allow_other'
+    state=present
+  become: true
+
+- name: install /etc/cvmfs/default.local
+  template:
+    src: default.local.j2
+    dest: /etc/cvmfs/default.local
+    owner: root
+    group: root
+    mode: "u=rw,g=r,o=r"
+    force: yes
+  become: true
+
+- name: make sure /cvmfs/... mount points exist
+  file:
+    path: "/cvmfs/{{ item }}"
+    state: directory
+    owner: cvmfs
+    group: cvmfs
+    #mode: 0755
+  become: true
+  with_items: "{{ cvmfs_mounts }}"
+
+- name: make sure /cvmfs/... mounts are defined in /etc/fstab and mounted
+  mount:
+    name: "/cvmfs/{{ item }}"
+    src: "{{ item }}"
+    fstype: cvmfs
+    opts: defaults,_netdev,nodev
+    state: mounted
+  become: true
+  with_items: "{{ cvmfs_mounts }}"

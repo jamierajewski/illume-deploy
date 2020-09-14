@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if NUM_GPUS=$(/usr/bin/nvidia-smi -i 0 --query-gpu=count --format=csv,noheader); then
+    echo "found $NUM_GPUS GPUs. setting max power limit for each"
+    for (( i=0; i<$NUM_GPUS; i++ )); do
+        MAX_POWER=$(/usr/bin/nvidia-smi -i $i --query-gpu=power.max_limit --format=csv,noheader | awk '{print $1}')
+        echo "  GPU $i: max power is $MAX_POWER - enabling persistence mode and setting max power limit"
+        /usr/bin/nvidia-smi -pm 1
+        /usr/bin/nvidia-smi -i $i -pl $MAX_POWER
+        echo "  GPU $i: done."
+    done
+else
+    echo "no GPUs found"
+fi

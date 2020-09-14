@@ -1,0 +1,10 @@
+---
+
+rke_control_nodes:
+$rke_control_nodes
+
+rke_gpu_nodes:
+$rke_gpu_nodes
+
+rke_storage_nodes:
+$rke_storage_nodes

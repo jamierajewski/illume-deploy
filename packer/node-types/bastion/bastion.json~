@@ -1,0 +1,21 @@
+{
+    "builders": [
+        {
+            "type": "openstack",
+            "flavor": "911a8099-d343-4cf3-a483-27b35a5b9bd4",
+            "ssh_username": "ubuntu",
+            "image_name": "illume-bastion-ubuntu-focal",
+            "source_image": "59c3f5e2-194f-43e9-bbc5-8d06eea21b51",
+            "networks": [
+                "ddbdc508-53dd-4a4f-8be7-c6555fefda62"
+            ],
+            "floating_ip_pool": "ext-net",
+            "use_floating_ip": true,
+            "security_groups": ["illume-bastion", "illume-internal-v2"]
+        }
+    ],
+    "provisioners": [{
+        "type": "shell",
+        "script": "setup-bastion.sh"
+    }]
+}

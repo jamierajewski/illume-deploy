@@ -1,6 +1,0 @@
-#!/bin/sh
-
-# taint control nodes so that pods don't end up on them
-{% for node in rke_control_nodes %}
-kubectl taint nodes {{ node }} node-role.kubernetes.io/master=true:NoSchedule
-{% endfor %}
